@@ -189,11 +189,8 @@ private struct StyledButtonLabel: View {
         configuration.label
             .font(.system(size: isPrimary ? 17 : 16, weight: isPrimary ? .bold : .semibold, design: .rounded))
             .foregroundColor(.white)
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
             .frame(maxWidth: .infinity)
             .padding(.vertical, isPrimary ? 14 : 13)
-            .padding(.horizontal, 8)
             .background(Capsule().fill(fill))
             .opacity(isEnabled ? (configuration.isPressed ? 0.75 : 1) : 0.35)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
