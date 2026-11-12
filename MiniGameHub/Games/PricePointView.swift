@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PricePointView: View {
-    @StateObject private var game = PriceGame()
+    @StateObject private var game = DemoMode.price()
     @State private var text = ""
 
     private let kind = GameKind.price

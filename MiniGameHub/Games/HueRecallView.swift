@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct HueRecallView: View {
-    @StateObject private var game = HueGame()
+    @StateObject private var game = DemoMode.hue()
     /// The first colour only appears once the player has pressed Start.
-    @State private var started = false
+    @State private var started = DemoMode.isOn
 
     private let kind = GameKind.hue
     private let clock = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BeatKeeperView: View {
-    @StateObject private var game = BeatGame()
+    @StateObject private var game = DemoMode.beat()
     @State private var pulse = false
     @State private var isPressed = false
     /// Changes whenever a scheduled run of beats should be abandoned.

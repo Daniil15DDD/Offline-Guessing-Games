@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FourfoldView: View {
-    @StateObject private var game = FourfoldGame()
+    @StateObject private var game = DemoMode.fourfold()
 
     private let kind = GameKind.fourfold
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)

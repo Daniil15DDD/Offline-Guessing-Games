@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BallparkView: View {
-    @StateObject private var game = BallparkGame()
+    @StateObject private var game = DemoMode.ballpark()
     @State private var text = ""
     @State private var multiplier = 1.0
 

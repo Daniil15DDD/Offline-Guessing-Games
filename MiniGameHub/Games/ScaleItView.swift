@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ScaleItView: View {
-    @StateObject private var game = ScaleGame()
+    @StateObject private var game = DemoMode.scale()
 
     private let kind = GameKind.scale
     /// The larger of the two shapes is always drawn this big.

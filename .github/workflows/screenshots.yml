@@ -45,13 +45,15 @@ jobs:
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" "$APP"
           mkdir -p docs/screenshots
+          # Let first-boot system banners come and go before capturing.
+          sleep 45
           STATUS=0
           for game in hub borderline fourfold topTen critter rare price ballpark trend scale hue pitch beat; do
             xcrun simctl terminate "$UDID" com.example.MiniGameHub 2>/dev/null || true
             if [ "$game" = hub ]; then
               xcrun simctl launch "$UDID" com.example.MiniGameHub
             else
-              xcrun simctl launch "$UDID" com.example.MiniGameHub -startGame "$game"
+              xcrun simctl launch "$UDID" com.example.MiniGameHub -startGame "$game" -demo YES
             fi
             sleep 6
             xcrun simctl io "$UDID" screenshot "$RUNNER_TEMP/$game.png"

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CritterCluesView: View {
-    @StateObject private var game = CritterGame()
+    @StateObject private var game = DemoMode.critter()
     @State private var text = ""
 
     private let kind = GameKind.critter

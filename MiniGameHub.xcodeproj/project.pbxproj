@@ -46,6 +46,7 @@
 		CB92AE8A7147388B64CA6BE7 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E0F5B486E2A0B6F481AE608 /* ScaleGame.swift */; };
 		45D68135A6B87FAADB200F64 /* TopTenGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967752B81825E08991937C05 /* TopTenGame.swift */; };
 		DD97DE3FA5B6C3473D230D34 /* TrendGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1186E9776F8410B8A9F2DC4 /* TrendGame.swift */; };
+		49391FC785F64706386D4C51 /* DemoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */; };
 		2264BD8436DA0BCB3464E358 /* GameChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D31E42E39D9E515B43A4453 /* GameChrome.swift */; };
 		08DD6FAE68BDEEA57649A9E3 /* GameKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C17793C525FD73D3424FBD /* GameKind.swift */; };
 		87ACA04CB9BE49EADC0A2120 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA6F5EB854E2020D108AD4F /* Haptics.swift */; };
@@ -97,6 +98,7 @@
 		1E0F5B486E2A0B6F481AE608 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
 		967752B81825E08991937C05 /* TopTenGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopTenGame.swift; sourceTree = "<group>"; };
 		D1186E9776F8410B8A9F2DC4 /* TrendGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendGame.swift; sourceTree = "<group>"; };
+		5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMode.swift; sourceTree = "<group>"; };
 		3D31E42E39D9E515B43A4453 /* GameChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameChrome.swift; sourceTree = "<group>"; };
 		95C17793C525FD73D3424FBD /* GameKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameKind.swift; sourceTree = "<group>"; };
 		EEA6F5EB854E2020D108AD4F /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
@@ -226,6 +228,7 @@
 		8836D1940D6E7D2B5DC2AEA3 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */,
 				3D31E42E39D9E515B43A4453 /* GameChrome.swift */,
 				95C17793C525FD73D3424FBD /* GameKind.swift */,
 				EEA6F5EB854E2020D108AD4F /* Haptics.swift */,
@@ -344,6 +347,7 @@
 				CB92AE8A7147388B64CA6BE7 /* ScaleGame.swift in Sources */,
 				45D68135A6B87FAADB200F64 /* TopTenGame.swift in Sources */,
 				DD97DE3FA5B6C3473D230D34 /* TrendGame.swift in Sources */,
+				49391FC785F64706386D4C51 /* DemoMode.swift in Sources */,
 				2264BD8436DA0BCB3464E358 /* GameChrome.swift in Sources */,
 				08DD6FAE68BDEEA57649A9E3 /* GameKind.swift in Sources */,
 				87ACA04CB9BE49EADC0A2120 /* Haptics.swift in Sources */,
