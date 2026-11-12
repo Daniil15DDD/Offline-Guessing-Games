@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct BorderlineView: View {
-    @StateObject private var game = DemoMode.borderline()
+    @StateObject private var game = BorderlineGame()
     @State private var text = ""
 
     private let kind = GameKind.borderline

@@ -25,6 +25,13 @@ data, images or branding of an existing game.
 | Pitch Match | Listen to a note, then tune your own note to match. | 5 notes | 500 |
 | Beat Keeper | Listen to a beat, then keep it going by tapping. | 5 beats | 500 |
 
+| | | | |
+| --- | --- | --- | --- |
+| ![Menu](docs/screenshots/hub.jpg) | ![Borderline](docs/screenshots/borderline.jpg) | ![Fourfold](docs/screenshots/fourfold.jpg) | ![Critter Clues](docs/screenshots/critter.jpg) |
+| ![Ten Count](docs/screenshots/topTen.jpg) | ![Trendline](docs/screenshots/trend.jpg) | ![Scale It](docs/screenshots/scale.jpg) | ![Hue Recall](docs/screenshots/hue.jpg) |
+
+These screenshots were taken from the app running in the iOS Simulator.
+
 Puzzles are dealt from a shuffled deck that is remembered between launches,
 so you see every puzzle in a game once before any repeats.
 
@@ -104,6 +111,13 @@ add the screen to the `switch` in `HubView`.
 Every push to a `claude/**` branch or a pull request runs
 `.github/workflows/ios-build.yml` on GitHub, which runs the rule and content
 checks and builds the app with Xcode for the iOS Simulator.
+
+What has been checked so far: the app builds with Xcode 26, the rule and
+content checks pass, and every game was launched in the iOS Simulator and
+screenshotted at its opening state and part-way through a round. What has not
+been checked: nobody has played it by hand on a simulator or a real iPhone
+yet, so touch handling (typing, dragging on the chart, tapping the beat) and
+the sound in Pitch Match and Beat Keeper are untested.
 
 To run the checks yourself from the repository root on a Mac:
 

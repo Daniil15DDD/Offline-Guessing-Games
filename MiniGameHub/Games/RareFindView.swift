@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct RareFindView: View {
-    @StateObject private var game = DemoMode.rare()
+    @StateObject private var game = RareGame()
     @State private var text = ""
     /// The clock only runs once the player has pressed Start.
-    @State private var started = DemoMode.isOn
+    @State private var started = false
 
     private let kind = GameKind.rare
     private let clock = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()

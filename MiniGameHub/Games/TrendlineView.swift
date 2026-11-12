@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TrendlineView: View {
-    @StateObject private var game = DemoMode.trend()
+    @StateObject private var game = TrendGame()
     /// Last hidden point touched during the current drag, for filling gaps.
     @State private var lastTouched: Int?
 
