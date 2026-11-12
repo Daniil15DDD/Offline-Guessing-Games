@@ -3,6 +3,8 @@ import SwiftUI
 struct RareFindView: View {
     @StateObject private var game = RareGame()
     @State private var text = ""
+    /// The clock only runs once the player has pressed Start.
+    @State private var started = false
 
     private let kind = GameKind.rare
     private let clock = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -19,48 +21,75 @@ struct RareFindView: View {
             }
         ) {
             GameColumn {
-                VStack(spacing: 12) {
-                    Text(game.prompt.text)
-                        .bodyText(24, weight: .heavy)
-                        .multilineTextAlignment(.center)
-
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            Capsule().fill(Theme.surfaceRaised)
-                            Capsule()
-                                .fill(game.timeLeft > 8 ? kind.accent : Theme.bad)
-                                .frame(width: geometry.size.width * CGFloat(game.timeLeft / RareGame.secondsPerPrompt))
-                        }
-                    }
-                    .frame(height: 8)
-                    .accessibilityLabel("\(Int(game.timeLeft.rounded(.up))) seconds left")
-                }
-                .panel()
-
-                if game.roundOver {
-                    reveal
+                if started {
+                    roundContent
                 } else {
-                    HStack(spacing: 8) {
-                        AnswerField(placeholder: "Your answer", text: $text, onSubmit: submit)
-                        Button("Go", action: submit)
-                            .buttonStyle(PrimaryButtonStyle(kind: kind))
-                            .frame(width: 80)
-                    }
-                    Text("Any accepted answer scores. The less obvious it is, the more it is worth, up to 100.")
-                        .caption()
-                        .multilineTextAlignment(.center)
-                    if !game.rejected.isEmpty {
-                        Text("Not accepted: " + game.rejected.joined(separator: ", "))
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
-                            .foregroundColor(Theme.bad)
-                            .multilineTextAlignment(.center)
-                    }
+                    intro
                 }
             }
         }
         .onReceive(clock) { now in
-            game.tick(now: now)
+            if started {
+                game.tick(now: now)
+            }
         }
+    }
+
+    @ViewBuilder
+    private var roundContent: some View {
+        VStack(spacing: 12) {
+            Text(game.prompt.text)
+                .bodyText(24, weight: .heavy)
+                .multilineTextAlignment(.center)
+
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Theme.surfaceRaised)
+                    Capsule()
+                        .fill(game.timeLeft > 8 ? kind.accent : Theme.bad)
+                        .frame(width: geometry.size.width * CGFloat(game.timeLeft / RareGame.secondsPerPrompt))
+                }
+            }
+            .frame(height: 8)
+            .accessibilityLabel("\(Int(game.timeLeft.rounded(.up))) seconds left")
+        }
+        .panel()
+
+        if game.roundOver {
+            reveal
+        } else {
+            HStack(spacing: 8) {
+                AnswerField(placeholder: "Your answer", text: $text, onSubmit: submit)
+                Button("Go", action: submit)
+                    .buttonStyle(PrimaryButtonStyle(kind: kind))
+                    .frame(width: 80)
+            }
+            Text("Any accepted answer scores. The less obvious it is, the more it is worth, up to 100.")
+                .caption()
+                .multilineTextAlignment(.center)
+            if !game.rejected.isEmpty {
+                Text("Not accepted: " + game.rejected.joined(separator: ", "))
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundColor(Theme.bad)
+                    .multilineTextAlignment(.center)
+            }
+        }
+    }
+
+    private var intro: some View {
+        VStack(spacing: 12) {
+            Text("\(RareGame.rounds) prompts, \(Int(RareGame.secondsPerPrompt)) seconds each")
+                .bodyText(20, weight: .heavy)
+                .multilineTextAlignment(.center)
+            Text("Type any answer that fits. Obvious answers score 10. The rarest score 100.")
+                .caption()
+                .multilineTextAlignment(.center)
+            Button("Start") {
+                started = true
+            }
+            .buttonStyle(PrimaryButtonStyle(kind: kind))
+        }
+        .panel()
     }
 
     private var reveal: some View {
