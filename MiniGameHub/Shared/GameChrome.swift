@@ -165,31 +165,38 @@ struct GameChrome<Content: View>: View {
 
 struct PrimaryButtonStyle: ButtonStyle {
     let kind: GameKind
-    @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(Capsule().fill(kind.gradient))
-            .opacity(isEnabled ? (configuration.isPressed ? 0.75 : 1) : 0.35)
-            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+        StyledButtonLabel(configuration: configuration, fill: AnyShapeStyle(kind.gradient), isPrimary: true)
     }
 }
 
 struct SecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        StyledButtonLabel(configuration: configuration, fill: AnyShapeStyle(Theme.surfaceRaised), isPrimary: false)
+    }
+}
+
+/// A view (not just a style) so it can read whether the button is enabled.
+private struct StyledButtonLabel: View {
+    let configuration: ButtonStyleConfiguration
+    let fill: AnyShapeStyle
+    let isPrimary: Bool
+
     @Environment(\.isEnabled) private var isEnabled
 
-    func makeBody(configuration: Configuration) -> some View {
+    var body: some View {
         configuration.label
-            .font(.system(size: 16, weight: .semibold, design: .rounded))
+            .font(.system(size: isPrimary ? 17 : 16, weight: isPrimary ? .bold : .semibold, design: .rounded))
             .foregroundColor(.white)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 13)
-            .background(Capsule().fill(Theme.surfaceRaised))
-            .opacity(isEnabled ? (configuration.isPressed ? 0.7 : 1) : 0.35)
+            .padding(.vertical, isPrimary ? 14 : 13)
+            .padding(.horizontal, 8)
+            .background(Capsule().fill(fill))
+            .opacity(isEnabled ? (configuration.isPressed ? 0.75 : 1) : 0.35)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
     }
 }
 
