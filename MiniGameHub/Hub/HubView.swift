@@ -10,14 +10,21 @@ struct HubView: View {
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 12) {
                     header
 
-                    ForEach(GameKind.allCases) { kind in
-                        NavigationLink(value: kind) {
-                            GameCard(kind: kind, best: scores.best(for: kind))
+                    ForEach(GameKind.Shelf.allCases) { shelf in
+                        Text(shelf.rawValue.uppercased())
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .foregroundColor(Theme.textSecondary)
+                            .padding(.top, 10)
+
+                        ForEach(GameKind.allCases.filter { $0.shelf == shelf }) { kind in
+                            NavigationLink(value: kind) {
+                                GameCard(kind: kind, best: scores.best(for: kind))
+                            }
+                            .buttonStyle(CardButtonStyle())
                         }
-                        .buttonStyle(CardButtonStyle())
                     }
 
                     settings
@@ -30,9 +37,18 @@ struct HubView: View {
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: GameKind.self) { kind in
                 switch kind {
-                case .runner: RunnerGameView()
-                case .merge: MergeGameView()
-                case .snake: SnakeGameView()
+                case .borderline: BorderlineView()
+                case .fourfold: FourfoldView()
+                case .topTen: TopTenView()
+                case .critter: CritterCluesView()
+                case .rare: RareFindView()
+                case .price: PricePointView()
+                case .ballpark: BallparkView()
+                case .trend: TrendlineView()
+                case .scale: ScaleItView()
+                case .hue: HueRecallView()
+                case .pitch: PitchMatchView()
+                case .beat: BeatKeeperView()
                 }
             }
         }
@@ -64,15 +80,14 @@ struct HubView: View {
             .padding(.vertical, 6)
             .background(Capsule().fill(Theme.surface))
 
-            Text("Mini Game Hub")
-                .font(.system(size: 36, weight: .heavy, design: .rounded))
+            Text("Guessing Games")
+                .font(.system(size: 34, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
 
-            Text("Three quick games. Your best scores stay on this iPhone.")
+            Text("Twelve quick games. Your best scores stay on this iPhone.")
                 .font(.system(size: 15, weight: .medium, design: .rounded))
                 .foregroundColor(Theme.textSecondary)
         }
-        .padding(.bottom, 6)
     }
 
     private var settings: some View {
@@ -106,11 +121,11 @@ struct HubView: View {
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface)
         )
-        .padding(.top, 10)
+        .padding(.top, 16)
     }
 
-    /// Launching with `-startGame runner` (or `merge`, `snake`) opens that
-    /// game directly. Handy while testing from Xcode's scheme arguments.
+    /// Launching with `-startGame borderline` (or any other game's raw
+    /// name from `GameKind`) opens that game directly. Handy while testing.
     private func openRequestedGame() {
         guard path.isEmpty,
               let raw = UserDefaults.standard.string(forKey: "startGame"),
@@ -125,18 +140,18 @@ private struct GameCard: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(kind.gradient)
-                .frame(width: 68, height: 68)
+                .frame(width: 56, height: 56)
                 .overlay(
                     Image(systemName: kind.symbol)
-                        .font(.system(size: 30, weight: .bold))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                 )
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(kind.title)
-                    .font(.system(size: 21, weight: .heavy, design: .rounded))
+                    .font(.system(size: 19, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
                 Text(kind.tagline)
                     .font(.system(size: 13, weight: .medium, design: .rounded))
@@ -152,24 +167,27 @@ private struct GameCard: View {
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundColor(Theme.textSecondary)
                 Text("\(best)")
-                    .font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .font(.system(size: 19, weight: .heavy, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(kind.gradient)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
+                Text("of \(kind.maxScore)")
+                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .foregroundColor(Theme.textSecondary)
             }
-            .frame(minWidth: 54)
+            .frame(minWidth: 50)
         }
-        .padding(16)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Theme.surface)
+            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surface)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
                 .stroke(Color.white.opacity(0.06), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(kind.title). Best score \(best).")
+        .accessibilityLabel("\(kind.title). Best score \(best) of \(kind.maxScore).")
     }
 }
 

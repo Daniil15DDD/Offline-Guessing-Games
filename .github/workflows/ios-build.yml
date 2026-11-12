@@ -17,7 +17,7 @@ jobs:
 
       - name: Game logic tests
         run: |
-          swiftc -swift-version 5 MiniGameHub/Logic/*.swift Tests/LogicTests/main.swift -o "$RUNNER_TEMP/logic-tests"
+          swiftc -swift-version 5 MiniGameHub/Logic/*.swift MiniGameHub/Data/*.swift MiniGameHub/Models/*.swift Tests/LogicTests/main.swift -o "$RUNNER_TEMP/logic-tests"
           "$RUNNER_TEMP/logic-tests"
 
       - name: Build for the iOS Simulator
