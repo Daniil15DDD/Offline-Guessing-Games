@@ -1,0 +1,33 @@
+name: iOS build
+
+on:
+  push:
+    branches: ["claude/**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Game logic tests
+        run: |
+          swiftc -swift-version 5 MiniGameHub/Logic/*.swift Tests/LogicTests/main.swift -o "$RUNNER_TEMP/logic-tests"
+          "$RUNNER_TEMP/logic-tests"
+
+      - name: Build for the iOS Simulator
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project MiniGameHub.xcodeproj \
+            -target MiniGameHub \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            SYMROOT="$RUNNER_TEMP/build" \
+            build 2>&1 | grep -E "error|warning: unre|BUILD|\*\*" | head -200
