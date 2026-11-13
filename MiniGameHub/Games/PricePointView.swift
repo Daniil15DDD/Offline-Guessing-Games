@@ -9,7 +9,7 @@ struct PricePointView: View {
 
     init(mode: PlayMode = .free) {
         self.mode = mode
-        _game = StateObject(wrappedValue: PriceGame(mode: mode))
+        _game = StateObject(wrappedValue: DemoMode.price(mode))
     }
 
     var body: some View {

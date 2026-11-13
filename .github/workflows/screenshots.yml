@@ -1,0 +1,91 @@
+name: Screenshots
+
+# Temporary: launches the app in the simulator in several states and saves
+# screenshots, to check the screens really render. Runs only when the commit
+# message contains [screenshots].
+
+on:
+  push:
+    branches: ["claude/**"]
+
+permissions:
+  contents: write
+
+jobs:
+  shots:
+    if: contains(github.event.head_commit.message, '[screenshots]')
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          xcodebuild -project MiniGameHub.xcodeproj -target MiniGameHub \
+            -sdk iphonesimulator -configuration Debug \
+            SYMROOT="$RUNNER_TEMP/build" -quiet build
+
+      - name: Launch each state and capture it
+        run: |
+          APP="$RUNNER_TEMP/build/Debug-iphonesimulator/MiniGameHub.app"
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          devices = json.load(sys.stdin)['devices']
+          best = None
+          for runtime in sorted(devices):
+              if 'iOS' not in runtime:
+                  continue
+              for device in devices[runtime]:
+                  if device['name'].startswith('iPhone') and 'Max' not in device['name'] and 'Plus' not in device['name']:
+                      best = device
+          print(best['udid'])
+          ")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+          mkdir -p docs/screenshots "$RUNNER_TEMP/check"
+          sleep 45
+          DAY=$(python3 -c "from datetime import date; print((date.today() - date(2026, 1, 1)).days)")
+          STATUS=0
+          shoot() {
+            # shoot <name> <folder> <launch arguments...>
+            local name="$1" folder="$2"
+            shift 2
+            xcrun simctl terminate "$UDID" com.example.MiniGameHub 2>/dev/null || true
+            xcrun simctl launch "$UDID" com.example.MiniGameHub "$@"
+            sleep 6
+            xcrun simctl io "$UDID" screenshot "$RUNNER_TEMP/$name.png"
+            sips -s format jpeg -s formatOptions 70 --resampleHeight 1300 "$RUNNER_TEMP/$name.png" --out "$folder/$name.jpg" >/dev/null
+            if xcrun simctl spawn "$UDID" launchctl list | grep -q MiniGameHub; then
+              echo "$name: still running"
+            else
+              echo "$name: CRASHED OR EXITED"
+              STATUS=1
+            fi
+          }
+          shoot hub docs/screenshots -daily.day "$DAY" -daily.lastPlayedDay "$DAY" -daily.streak 4 \
+            -daily.results "{globe = 76; hue = 412; fourfold = 500;}"
+          for game in globe fourfold topTen critter deep price ballpark trend scale hue pitch beat; do
+            shoot "$game" docs/screenshots -startGame "$game"
+          done
+          # Extra states, only for checking.
+          C=docs/check
+          mkdir -p "$C"
+          shoot stats "$C" -demo stats -plays.globe 6 -total.globe 420 -highscore.globe 92 \
+            -plays.fourfold 3 -total.fourfold 1100 -highscore.fourfold 475 -plays.hue 1 -total.hue 388 -highscore.hue 388
+          shoot sound "$C" -demo sound
+          shoot rules "$C" -startGame deep -demo rules
+          shoot calculator "$C" -startGame ballpark -demo calc
+          shoot fourfoldOver "$C" -startGame fourfold -demo over
+          shoot priceDone "$C" -startGame price -demo finished
+          shoot globeZoom "$C" -startGame globe -demo zoom
+          exit $STATUS
+
+      - name: Commit the screenshots
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git commit -m "Add simulator screenshots [skip ci]" || exit 0
+          git push
