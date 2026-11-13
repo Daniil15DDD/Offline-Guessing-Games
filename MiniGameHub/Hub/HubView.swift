@@ -1,47 +1,55 @@
 import SwiftUI
 
-/// The main menu: one card per game, each showing the saved best score.
+/// The main menu: a tile per game, each showing the saved best score.
 struct HubView: View {
     @EnvironmentObject private var scores: HighScoreStore
     @AppStorage(Haptics.enabledKey) private var hapticsEnabled = true
     @State private var path: [GameKind] = []
     @State private var confirmReset = false
 
+    private let columns = [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)]
+
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 18) {
                     header
 
-                    ForEach(GameKind.Shelf.allCases) { shelf in
-                        Text(shelf.rawValue.uppercased())
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
-                            .foregroundColor(Theme.textSecondary)
-                            .padding(.top, 10)
-
-                        ForEach(GameKind.allCases.filter { $0.shelf == shelf }) { kind in
+                    LazyVGrid(columns: columns, spacing: 14) {
+                        ForEach(GameKind.allCases) { kind in
                             NavigationLink(value: kind) {
-                                GameCard(kind: kind, best: scores.best(for: kind))
+                                GameTile(kind: kind, best: scores.best(for: kind))
                             }
-                            .buttonStyle(CardButtonStyle())
+                            .buttonStyle(TileButtonStyle())
                         }
                     }
 
                     settings
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.horizontal, 18)
+                .padding(.top, 14)
                 .padding(.bottom, 32)
             }
-            .background(Theme.background.ignoresSafeArea())
+            .background(
+                ZStack {
+                    Theme.background
+                    RadialGradient(
+                        colors: [Color(hex: 0x4F5BD5, opacity: 0.35), Color(hex: 0x4F5BD5, opacity: 0)],
+                        center: .topLeading,
+                        startRadius: 0,
+                        endRadius: 480
+                    )
+                }
+                .ignoresSafeArea()
+            )
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: GameKind.self) { kind in
                 switch kind {
-                case .borderline: BorderlineView()
+                case .globe: GettingWarmerView()
                 case .fourfold: FourfoldView()
                 case .topTen: TopTenView()
                 case .critter: CritterCluesView()
-                case .rare: RareFindView()
+                case .deep: DeepCatchView()
                 case .price: PricePointView()
                 case .ballpark: BallparkView()
                 case .trend: TrendlineView()
@@ -68,25 +76,32 @@ struct HubView: View {
         }
     }
 
+    private var totalBest: Int {
+        GameKind.allCases.reduce(0) { $0 + scores.best(for: $1) }
+    }
+
     private var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Image(systemName: "wifi.slash")
                 Text("WORKS OFFLINE")
             }
             .font(.system(size: 11, weight: .bold, design: .rounded))
-            .foregroundColor(Theme.textSecondary)
+            .foregroundColor(.white.opacity(0.8))
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
-            .background(Capsule().fill(Theme.surface))
+            .background(Capsule().fill(Color.white.opacity(0.12)))
 
             Text("Guessing Games")
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
+                .font(.system(size: 36, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
 
-            Text("Twelve quick games. Your best scores stay on this iPhone.")
-                .font(.system(size: 15, weight: .medium, design: .rounded))
-                .foregroundColor(Theme.textSecondary)
+            HStack(spacing: 8) {
+                Image(systemName: "star.fill").foregroundColor(Color(hex: 0xF5C542))
+                Text("\(NumberText.grouped(Double(totalBest))) points across \(GameKind.allCases.count) games")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.85))
+            }
         }
     }
 
@@ -121,11 +136,11 @@ struct HubView: View {
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous).fill(Theme.surface)
         )
-        .padding(.top, 16)
+        .padding(.top, 6)
     }
 
-    /// Launching with `-startGame borderline` (or any other game's raw
-    /// name from `GameKind`) opens that game directly. Handy while testing.
+    /// Launching with `-startGame globe` (or any other game's raw name from
+    /// `GameKind`) opens that game directly. Handy while testing.
     private func openRequestedGame() {
         guard path.isEmpty,
               let raw = UserDefaults.standard.string(forKey: "startGame"),
@@ -134,68 +149,81 @@ struct HubView: View {
     }
 }
 
-private struct GameCard: View {
+private struct GameTile: View {
     let kind: GameKind
     let best: Int
 
+    private var progress: CGFloat {
+        kind.maxScore > 0 ? CGFloat(min(best, kind.maxScore)) / CGFloat(kind.maxScore) : 0
+    }
+
     var body: some View {
-        HStack(spacing: 14) {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(kind.gradient)
-                .frame(width: 56, height: 56)
-                .overlay(
-                    Image(systemName: kind.symbol)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                )
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(kind.title)
-                    .font(.system(size: 19, weight: .heavy, design: .rounded))
-                    .foregroundColor(.white)
-                Text(kind.tagline)
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundColor(Theme.textSecondary)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                Spacer()
+                Image(kind.art)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 84, height: 84)
+                    .shadow(color: .black.opacity(0.25), radius: 8, x: 0, y: 6)
             }
 
-            Spacer(minLength: 4)
+            Spacer(minLength: 6)
 
-            VStack(spacing: 2) {
-                Text("BEST")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .foregroundColor(Theme.textSecondary)
-                Text("\(best)")
-                    .font(.system(size: 19, weight: .heavy, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundStyle(kind.gradient)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
-                Text("of \(kind.maxScore)")
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
-                    .foregroundColor(Theme.textSecondary)
+            Text(kind.title)
+                .font(.system(size: 19, weight: .heavy, design: .rounded))
+                .foregroundColor(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+
+            Text(kind.tagline)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.85))
+                .multilineTextAlignment(.leading)
+                .lineLimit(2)
+                .frame(height: 32, alignment: .topLeading)
+                .padding(.top, 2)
+
+            // Best score as a bar.
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.black.opacity(0.22))
+                    Capsule()
+                        .fill(Color.white)
+                        .frame(width: max(geometry.size.width * progress, best > 0 ? 6 : 0))
+                }
             }
-            .frame(minWidth: 50)
+            .frame(height: 6)
+            .padding(.top, 8)
+
+            Text(best > 0 ? "Best \(best) of \(kind.maxScore)" : "Not played yet")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundColor(.white.opacity(0.9))
+                .padding(.top, 5)
         }
         .padding(14)
+        .frame(height: 214)
         .background(
-            RoundedRectangle(cornerRadius: 22, style: .continuous).fill(Theme.surface)
+            RoundedRectangle(cornerRadius: 24, style: .continuous).fill(kind.gradient)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+            // A soft highlight across the top edge.
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(
+                    LinearGradient(colors: [.white.opacity(0.45), .white.opacity(0)], startPoint: .top, endPoint: .bottom),
+                    lineWidth: 1.5
+                )
         )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(kind.title). Best score \(best) of \(kind.maxScore).")
+        .shadow(color: kind.colors[1].opacity(0.35), radius: 12, x: 0, y: 8)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(kind.title). \(kind.tagline) Best score \(best) of \(kind.maxScore).")
     }
 }
 
-private struct CardButtonStyle: ButtonStyle {
+private struct TileButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.97 : 1)
-            .opacity(configuration.isPressed ? 0.85 : 1)
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }

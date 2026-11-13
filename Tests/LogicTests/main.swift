@@ -21,7 +21,7 @@ func expect(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> 
 }
 
 // Keep the real puzzle decks untouched by these tests.
-let deckKeys = ["borderline", "fourfold", "topten", "critters", "prices", "rare", "ballpark", "trend", "scale", "test"]
+let deckKeys = ["globe", "fourfold", "topten", "critters", "prices", "rare", "ballpark", "trend", "scale", "test"]
 func resetDecks() {
     for key in deckKeys {
         UserDefaults.standard.removeObject(forKey: "deck." + key)
@@ -56,14 +56,17 @@ do {
     // London to Paris is about 344 km.
     let km = Geo.distanceKm(lat1: 51.5074, lon1: -0.1278, lat2: 48.8566, lon2: 2.3522)
     expect(abs(km - 344) < 5, "London to Paris distance, got \(km)")
-    let north = Geo.bearing(lat1: 0, lon1: 0, lat2: 10, lon2: 0)
-    let east = Geo.bearing(lat1: 0, lon1: 0, lat2: 0, lon2: 10)
-    let southWest = Geo.bearing(lat1: 10, lon1: 10, lat2: 0, lon2: 0)
-    expect(abs(north) < 0.01 && Geo.compass(north) == "N", "bearing north")
-    expect(abs(east - 90) < 0.01 && Geo.compass(east) == "E", "bearing east")
-    expect(Geo.compass(southWest) == "SW", "bearing south-west, got \(southWest)")
-    expect(Geo.compass(359.9) == "N" && Geo.compass(337.4) == "NW", "compass wraps")
-    expect(Geo.proximity(km: 0) == 100 && Geo.proximity(km: 30000) == 0, "proximity range")
+
+    // Turning the globe to face a place puts that place dead centre.
+    let facing = GlobeOrientation(latitude: 35, longitude: 139)
+    let centre = facing.rotate(Vec3(latitude: 35, longitude: 139))
+    expect(abs(centre.x) < 1e-9 && abs(centre.y) < 1e-9 && abs(centre.z - 1) < 1e-9, "the faced point is at the centre")
+    let opposite = facing.rotate(Vec3(latitude: -35, longitude: -41))
+    expect(opposite.z < -0.999, "the far side of the world is hidden")
+    let front = GlobeOrientation(latitude: 0, longitude: 0)
+    let north = front.rotate(Vec3(latitude: 90, longitude: 0))
+    let east = front.rotate(Vec3(latitude: 0, longitude: 90))
+    expect(abs(north.y - 1) < 1e-9 && abs(east.x - 1) < 1e-9, "north is up and east is right")
 }
 
 // MARK: - Scoring and numbers
@@ -116,6 +119,16 @@ do {
     for name in Atlas.aliases.keys {
         expect(countries.contains { $0.name == name }, "alias key \(name) is a country")
     }
+    func country(_ name: String) -> Country { countries.first { $0.name == name }! }
+    expect(Atlas.borderDistanceKm(country("France"), country("Spain")) < 1, "France and Spain touch")
+    expect(Atlas.borderDistanceKm(country("Russia"), country("China")) < 1, "Russia and China touch")
+    expect(Atlas.borderDistanceKm(country("Brazil"), country("Brazil")) == 0, "a country is zero from itself")
+    let hop = Atlas.borderDistanceKm(country("Australia"), country("New Zealand"))
+    expect(hop > 1000 && hop < 2500, "Australia to New Zealand, got \(hop)")
+    let far = Atlas.borderDistanceKm(country("Brazil"), country("Japan"))
+    expect(far > 12000, "Brazil to Japan is far, got \(far)")
+    expect(Atlas.borderDistanceKm(country("Chile"), country("Peru")) == Atlas.borderDistanceKm(country("Peru"), country("Chile")), "distance is the same both ways")
+    expect(Atlas.outlines.count == countries.count, "one outline per country")
     for (name, aliases) in Atlas.aliases {
         for alias in aliases {
             let index = TextMatch.bestMatch(alias, in: countries.map(\.spellings))
@@ -145,6 +158,7 @@ for list in TopTenLists.all {
 do {
     let critters = Critters.all
     expect(critters.count >= 50, "at least fifty animals")
+    expect(critters.allSatisfy { !$0.art.isEmpty }, "every animal has a picture")
     expect(Set(critters.map(\.name)).count == critters.count, "animal names are unique")
     let groups: Set<String> = ["Mammal", "Bird", "Reptile", "Amphibian", "Fish", "Invertebrate"]
     let diets: Set<String> = ["Herbivore", "Carnivore", "Omnivore"]
@@ -167,7 +181,7 @@ do {
     }
 }
 
-expect(PriceItems.all.count >= 40 && PriceItems.all.allSatisfy { $0.price > 0 }, "price items are valid")
+expect(PriceItems.all.count >= 40 && PriceItems.all.allSatisfy { $0.price > 0 && !$0.art.isEmpty }, "price items are valid")
 expect(Set(PriceItems.all.map(\.name)).count == PriceItems.all.count, "price item names are unique")
 
 for prompt in RarePrompts.all {
@@ -208,35 +222,43 @@ for pair in ScalePairs.all {
     expect(abs(ScaleGame.ratio(forSlider: slider) - pair.ratio) < pair.ratio * 0.0001, "slider maths round-trips")
 }
 
-// MARK: - Borderline
+// MARK: - Getting Warmer
 
 do {
     resetDecks()
-    let game = BorderlineGame()
-    var total = 0
-    for round in 0..<BorderlineGame.rounds {
-        expect(!game.roundOver && game.guesses.isEmpty, "round \(round) starts clean")
-        let wrong = Atlas.countries.first { $0.name != game.target.name }!
-        game.guess(wrong)
-        game.guess(wrong)
-        expect(game.guesses.count == 1, "a repeated guess is ignored")
-        expect(game.guesses[0].distanceKm > 0 && !game.guesses[0].isCorrect, "wrong guess gives a distance")
-        expect(!game.suggestions(for: wrong.name).contains(wrong), "guessed countries leave the suggestions")
-        let suggestion = game.suggestions(for: String(game.target.name.prefix(3)))
-        expect(suggestion.contains(game.target), "typing the start of the name suggests it")
-        game.guess(game.target)
-        expect(game.solved && game.roundOver, "right guess ends the round")
-        expect(game.lastPoints == Scoring.ladder(attempt: 2, maxAttempts: 6), "second-try points")
-        total += game.lastPoints
-        game.next()
-    }
-    expect(game.isFinished && game.score == total, "run ends with the summed score")
+    let game = GlobeGame()
+    expect(GlobeGame.heat(forDistanceKm: 0) == 1 && GlobeGame.heat(forDistanceKm: 9000) == 0, "heat range")
+    expect(GlobeGame.heat(forDistanceKm: 500) > GlobeGame.heat(forDistanceKm: 2000), "nearer is hotter")
+    expect(GlobeGame.points(guessCount: 1) == 100 && GlobeGame.points(guessCount: 6) == 80 && GlobeGame.points(guessCount: 80) == 10, "globe points")
+
+    let others = Atlas.countries.filter { $0.id != game.target.id }
+    game.guess(others[0])
+    game.guess(others[0])
+    expect(game.guesses.count == 1, "a repeated guess is ignored")
+    expect(!game.guesses[0].isCorrect && game.guesses[0].heat < 1.0001, "a wrong guess is scored for heat")
+    expect(!game.suggestions(for: others[0].name).contains(others[0]), "guessed countries leave the suggestions")
+    expect(game.suggestions(for: String(game.target.name.prefix(3))).contains(game.target), "typing the start of the name suggests it")
+    for country in others[1...5] { game.guess(country) }
+    let ranked = game.ranked
+    expect(zip(ranked, ranked.dropFirst()).allSatisfy { $0.distanceKm <= $1.distanceKm }, "guesses are ranked nearest first")
+    expect(ranked.allSatisfy { $0.heat >= 0 && $0.heat <= 1 }, "heat stays between 0 and 1")
+    game.guess(game.target)
+    expect(game.solved && game.isOver && game.score == GlobeGame.points(guessCount: 7), "the right country ends the game")
+    expect(game.ranked.first?.isCorrect == true, "the answer ranks first")
+    game.guess(others[9])
+    expect(game.guesses.count == 7, "no guesses after the end")
+    game.finish()
+    expect(game.isFinished, "finish ends the run")
+
     game.restart()
-    expect(!game.isFinished && game.score == 0 && game.roundIndex == 0, "restart clears the run")
-    // Six wrong guesses lose the round.
-    let others = Atlas.countries.filter { $0.name != game.target.name }.prefix(6)
-    for country in others { game.guess(country) }
-    expect(game.roundOver && !game.solved && game.lastPoints == 0, "six misses end the round with nothing")
+    expect(!game.isFinished && game.score == 0 && game.guesses.isEmpty, "restart clears the run")
+    game.giveUp()
+    expect(game.isOver && !game.solved && game.score == 0, "giving up scores nothing")
+
+    // Neighbours of the answer are always fully hot.
+    let france = Atlas.countries.first { $0.name == "France" }!
+    let spain = Atlas.countries.first { $0.name == "Spain" }!
+    expect(GlobeGame.heat(forDistanceKm: Atlas.borderDistanceKm(spain, france)) > 0.999, "a neighbour is as hot as it gets")
 }
 
 // MARK: - Fourfold
@@ -530,6 +552,20 @@ do {
     expect(game.isFinished, "beat run ends")
     expect(BeatGame.bpm(fromTaps: [0, 0.5, 1.0, 1.5]) == 120, "tempo from taps")
     expect(BeatGame.bpm(fromTaps: [3]) == 0, "one tap has no tempo")
+}
+
+// MARK: - Pictures
+
+do {
+    // When run from the repository root, check every picture named in the
+    // content really exists in the asset catalog.
+    let folder = "MiniGameHub/Assets.xcassets/Art"
+    if FileManager.default.fileExists(atPath: folder) {
+        let names = PriceItems.all.map(\.art) + Critters.all.map(\.art)
+        for name in names {
+            expect(FileManager.default.fileExists(atPath: "\(folder)/\(name).imageset/\(name).png"), "picture \(name) exists")
+        }
+    }
 }
 
 resetDecks()

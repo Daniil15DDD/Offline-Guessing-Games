@@ -1,39 +1,66 @@
 import Foundation
 
-/// Great-circle maths for the map game.
+/// A point on a unit sphere. With the globe facing the viewer at latitude 0,
+/// longitude 0: x points east, y points north, z points at the viewer.
+struct Vec3: Equatable {
+    var x: Double
+    var y: Double
+    var z: Double
+
+    init(x: Double, y: Double, z: Double) {
+        self.x = x
+        self.y = y
+        self.z = z
+    }
+
+    init(latitude: Double, longitude: Double) {
+        let phi = latitude * .pi / 180
+        let lambda = longitude * .pi / 180
+        x = cos(phi) * sin(lambda)
+        y = sin(phi)
+        z = cos(phi) * cos(lambda)
+    }
+
+    func dot(_ other: Vec3) -> Double {
+        x * other.x + y * other.y + z * other.z
+    }
+}
+
+/// Great-circle maths for the globe game.
 enum Geo {
     static let earthRadiusKm = 6371.0
 
     static func distanceKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double) -> Double {
-        let p1 = lat1 * .pi / 180
-        let p2 = lat2 * .pi / 180
-        let dp = (lat2 - lat1) * .pi / 180
-        let dl = (lon2 - lon1) * .pi / 180
-        let a = sin(dp / 2) * sin(dp / 2) + cos(p1) * cos(p2) * sin(dl / 2) * sin(dl / 2)
-        return earthRadiusKm * 2 * atan2(sqrt(a), sqrt(max(0, 1 - a)))
+        distanceKm(Vec3(latitude: lat1, longitude: lon1), Vec3(latitude: lat2, longitude: lon2))
     }
 
-    /// Initial compass bearing from point 1 to point 2, in degrees clockwise
-    /// from north (0 up to, but not including, 360).
-    static func bearing(lat1: Double, lon1: Double, lat2: Double, lon2: Double) -> Double {
-        let p1 = lat1 * .pi / 180
-        let p2 = lat2 * .pi / 180
-        let dl = (lon2 - lon1) * .pi / 180
-        let y = sin(dl) * cos(p2)
-        let x = cos(p1) * sin(p2) - sin(p1) * cos(p2) * cos(dl)
-        let degrees = atan2(y, x) * 180 / .pi
-        return (degrees + 360).truncatingRemainder(dividingBy: 360)
+    static func distanceKm(_ first: Vec3, _ second: Vec3) -> Double {
+        earthRadiusKm * acos(min(1, max(-1, first.dot(second))))
+    }
+}
+
+/// Turns the globe so a chosen place faces the viewer.
+struct GlobeOrientation {
+    private let sinLat: Double
+    private let cosLat: Double
+    private let sinLon: Double
+    private let cosLon: Double
+
+    init(latitude: Double, longitude: Double) {
+        let phi = latitude * .pi / 180
+        let lambda = longitude * .pi / 180
+        sinLat = sin(phi)
+        cosLat = cos(phi)
+        sinLon = sin(lambda)
+        cosLon = cos(lambda)
     }
 
-    static func compass(_ bearing: Double) -> String {
-        let names = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-        let index = Int((bearing + 22.5) / 45) % 8
-        return names[max(0, index)]
-    }
-
-    /// 100 when on target, falling to 0 on the far side of the planet.
-    static func proximity(km: Double) -> Int {
-        let farthest = Double.pi * earthRadiusKm
-        return Int((max(0, 1 - km / farthest) * 100).rounded())
+    /// Where a point ends up after turning. It is visible when z is positive.
+    func rotate(_ point: Vec3) -> Vec3 {
+        let x1 = point.x * cosLon - point.z * sinLon
+        let z1 = point.x * sinLon + point.z * cosLon
+        let y2 = point.y * cosLat - z1 * sinLat
+        let z2 = point.y * sinLat + z1 * cosLat
+        return Vec3(x: x1, y: y2, z: z2)
     }
 }

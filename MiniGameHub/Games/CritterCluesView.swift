@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CritterCluesView: View {
-    @StateObject private var game = CritterGame()
+    @StateObject private var game = DemoMode.critter()
     @State private var text = ""
 
     private let kind = GameKind.critter
@@ -26,6 +26,14 @@ struct CritterCluesView: View {
                 }
 
                 if game.rows.isEmpty {
+                    if !game.isOver {
+                        Image("hub_critter")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 110, height: 110)
+                            .padding(.top, 6)
+                            .accessibilityHidden(true)
+                    }
                     Text("Guess any animal. Green means that trait matches the mystery animal, amber means partly, and arrows say whether the answer has more or less.")
                         .caption()
                         .multilineTextAlignment(.center)
@@ -57,7 +65,11 @@ struct CritterCluesView: View {
                 Button {
                     choose(critter)
                 } label: {
-                    HStack {
+                    HStack(spacing: 10) {
+                        Image(critter.art)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 30, height: 30)
                         Text(critter.name).bodyText()
                         Spacer()
                         Image(systemName: "arrow.up.left").foregroundColor(Theme.textSecondary)
@@ -81,6 +93,10 @@ struct CritterCluesView: View {
 
     private var reveal: some View {
         VStack(spacing: 10) {
+            Image(game.target.art)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 120, height: 120)
             Text(game.solved ? "You found it" : "It was").caption()
             Text(game.target.name)
                 .bodyText(26, weight: .heavy)
@@ -110,7 +126,13 @@ private struct ClueRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(row.critter.name).bodyText(15)
+            HStack(spacing: 8) {
+                Image(row.critter.art)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
+                Text(row.critter.name).bodyText(15)
+            }
             HStack(spacing: 4) {
                 cell(row.critter.group, row.group)
                 cell(row.critter.diet, row.diet)

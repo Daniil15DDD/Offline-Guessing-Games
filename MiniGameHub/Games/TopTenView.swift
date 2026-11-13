@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TopTenView: View {
-    @StateObject private var game = TopTenGame()
+    @StateObject private var game = DemoMode.topTen()
     @State private var text = ""
 
     private let kind = GameKind.topTen

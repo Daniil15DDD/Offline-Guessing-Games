@@ -43,7 +43,19 @@ struct GameChrome<Content: View>: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .animation(.easeOut(duration: 0.2), value: isFinished)
         }
-        .background(Theme.background.ignoresSafeArea())
+        .background(
+            ZStack {
+                Theme.background
+                // A wash of the game's own colour at the top of the screen.
+                RadialGradient(
+                    colors: [kind.accent.opacity(0.28), kind.accent.opacity(0)],
+                    center: .top,
+                    startRadius: 0,
+                    endRadius: 420
+                )
+            }
+            .ignoresSafeArea()
+        )
         .toolbar(.hidden, for: .navigationBar)
         .onChange(of: isFinished) { finished in
             if finished {

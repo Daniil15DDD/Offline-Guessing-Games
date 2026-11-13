@@ -1,6 +1,6 @@
 import Foundation
 
-// Country outlines for Borderline.
+// Country outlines for the globe game.
 //
 // Generated from Natural Earth 1:110m data (public domain,
 // naturalearthdata.com) via the world-atlas package. One country per line:

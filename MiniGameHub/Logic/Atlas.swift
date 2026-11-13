@@ -19,9 +19,35 @@ struct Country: Identifiable, Equatable {
     }
 }
 
-/// The countries used by Borderline, parsed once from `CountryData`.
+/// The countries used by the globe game, parsed once from `CountryData`.
 enum Atlas {
     static let countries: [Country] = parse(CountryData.raw)
+
+    /// Every outline point of every country as a point on the unit sphere:
+    /// `outlines[country.id][ring][point]`.
+    static let outlines: [[[Vec3]]] = countries.map { country in
+        country.rings.map { ring in
+            ring.map { Vec3(latitude: $0.y, longitude: $0.x) }
+        }
+    }
+
+    /// Shortest distance between the edges of two countries. Neighbours that
+    /// share a border come out as zero.
+    static func borderDistanceKm(_ first: Country, _ second: Country) -> Double {
+        if first.id == second.id { return 0 }
+        var closest = -1.0
+        for ringA in outlines[first.id] {
+            for a in ringA {
+                for ringB in outlines[second.id] {
+                    for b in ringB {
+                        let dot = a.dot(b)
+                        if dot > closest { closest = dot }
+                    }
+                }
+            }
+        }
+        return Geo.earthRadiusKm * acos(min(1, max(-1, closest)))
+    }
 
     static let aliases: [String: [String]] = [
         "United States": ["USA", "US", "America", "United States of America"],

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PricePointView: View {
-    @StateObject private var game = PriceGame()
+    @StateObject private var game = DemoMode.price()
     @State private var text = ""
 
     private let kind = GameKind.price
@@ -18,18 +18,7 @@ struct PricePointView: View {
             }
         ) {
             GameColumn {
-                VStack(spacing: 6) {
-                    Text(game.item.name)
-                        .bodyText(24, weight: .heavy)
-                        .multilineTextAlignment(.center)
-                    Text(game.item.detail)
-                        .caption()
-                        .multilineTextAlignment(.center)
-                    Text("Typical US shop price. Get within 5% to win.")
-                        .caption()
-                        .multilineTextAlignment(.center)
-                }
-                .panel()
+                ProductCard(item: game.item)
 
                 if game.roundOver {
                     reveal
@@ -92,7 +81,7 @@ struct PricePointView: View {
         }
     }
 
-    private static func money(_ amount: Double) -> String {
+    static func money(_ amount: Double) -> String {
         if amount >= 100 {
             return "$" + NumberText.grouped(amount.rounded())
         }
@@ -113,5 +102,56 @@ struct PricePointView: View {
         case .lower: return "arrow.down"
         case .correct: return "checkmark"
         }
+    }
+}
+
+/// The item on show, like a product on a shop shelf.
+private struct ProductCard: View {
+    let item: PriceItem
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ZStack {
+                LinearGradient(
+                    colors: [Color(hex: 0xFDFEFF), Color(hex: 0xDCE4F2)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                // Soft shadow under the item so it sits on the surface.
+                Ellipse()
+                    .fill(Color.black.opacity(0.18))
+                    .frame(width: 130, height: 18)
+                    .blur(radius: 8)
+                    .offset(y: 78)
+                Image(item.art)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 168, height: 168)
+                    .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 8)
+            }
+            .frame(height: 210)
+
+            VStack(spacing: 5) {
+                Text(item.name)
+                    .bodyText(22, weight: .heavy)
+                    .multilineTextAlignment(.center)
+                Text(item.detail)
+                    .caption()
+                    .multilineTextAlignment(.center)
+                Text("Typical US shop price. Get within 5% to win.")
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundColor(Theme.textSecondary.opacity(0.8))
+                    .multilineTextAlignment(.center)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity)
+            .background(Theme.surface)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
+        .accessibilityElement(children: .combine)
     }
 }

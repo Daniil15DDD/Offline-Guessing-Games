@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PitchMatchView: View {
-    @StateObject private var game = PitchGame()
+    @StateObject private var game = DemoMode.pitch()
 
     private let kind = GameKind.pitch
 
