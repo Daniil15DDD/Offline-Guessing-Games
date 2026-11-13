@@ -159,7 +159,7 @@ enum Heat {
     static let found = Color(hex: 0x3BE38B)
 
     private static let stops: [(Double, Double, Double)] = [
-        (0.42, 0.62, 0.86),  // far: cool blue
+        (0.72, 0.84, 0.98),  // far: pale ice blue
         (0.31, 0.80, 0.76),  // teal
         (0.97, 0.84, 0.36),  // yellow
         (0.96, 0.55, 0.22),  // orange
@@ -241,8 +241,8 @@ struct GlobeCanvas: View, Animatable {
         }
     }
 
-    private static let land = Color(hex: 0x39446B)
-    private static let border = Color(hex: 0x0F1630)
+    private static let land = Color(hex: 0x5A6CA8)
+    private static let border = Color(hex: 0x1B2658)
 
     var body: some View {
         Canvas { context, size in
@@ -258,7 +258,7 @@ struct GlobeCanvas: View, Animatable {
             context.fill(
                 Path(ellipseIn: disc),
                 with: .radialGradient(
-                    Gradient(colors: [Color(hex: 0x24418F), Color(hex: 0x0D1A45)]),
+                    Gradient(colors: [Color(hex: 0x3563D6), Color(hex: 0x14235F)]),
                     center: CGPoint(x: centre.x - radius * 0.35, y: centre.y - radius * 0.4),
                     startRadius: 0,
                     endRadius: radius * 1.6
@@ -312,7 +312,7 @@ struct GlobeCanvas: View, Animatable {
             context.fill(
                 Path(ellipseIn: disc),
                 with: .radialGradient(
-                    Gradient(colors: [.clear, .clear, Color.black.opacity(0.45)]),
+                    Gradient(colors: [.clear, .clear, Color.black.opacity(0.35)]),
                     center: centre,
                     startRadius: 0,
                     endRadius: radius

@@ -28,6 +28,11 @@ struct BallparkView: View {
         ) {
             GameColumn {
                 VStack(spacing: 8) {
+                    Image("hub_ballpark")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 64, height: 64)
+                        .accessibilityHidden(true)
                     Text(game.question.text)
                         .bodyText(22, weight: .heavy)
                         .multilineTextAlignment(.center)

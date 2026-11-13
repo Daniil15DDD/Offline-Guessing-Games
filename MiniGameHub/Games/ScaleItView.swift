@@ -21,7 +21,7 @@ struct ScaleItView: View {
                     .multilineTextAlignment(.center)
 
                 HStack(alignment: .bottom, spacing: 18) {
-                    figure(name: game.pair.referenceName, size: referenceSize, color: Theme.textSecondary)
+                    figure(name: game.pair.referenceName, size: referenceSize, color: Color(hex: 0x8FA0D8))
                     figure(name: game.pair.targetName, size: targetSize, color: kind.accent)
                 }
                 .frame(height: fullSize + 50, alignment: .bottom)
@@ -66,10 +66,30 @@ struct ScaleItView: View {
             if game.pair.shape == .circle {
                 Circle()
                     .fill(color)
+                    .overlay(
+                        // A highlight and a shaded edge so it reads as a ball.
+                        Circle().fill(
+                            RadialGradient(
+                                colors: [.white.opacity(0.55), .white.opacity(0), .black.opacity(0.28)],
+                                center: UnitPoint(x: 0.32, y: 0.28),
+                                startRadius: 0,
+                                endRadius: max(size, 2) * 0.75
+                            )
+                        )
+                    )
                     .frame(width: max(size, 2), height: max(size, 2))
             } else {
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(color)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous).fill(
+                            LinearGradient(
+                                colors: [.white.opacity(0.35), .white.opacity(0), .black.opacity(0.25)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                    )
                     .frame(width: 44, height: max(size, 2))
             }
             Text(name)

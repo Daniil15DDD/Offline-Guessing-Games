@@ -14,8 +14,15 @@ struct PitchMatchView: View {
             onRestart: { game.restart() }
         ) {
             GameColumn {
-                Text("Turn your sound on")
-                    .caption()
+                HStack(spacing: 10) {
+                    Image("hub_pitch")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 44, height: 44)
+                        .accessibilityHidden(true)
+                    Text("Turn your sound on")
+                        .caption()
+                }
 
                 Button {
                     if game.useListen() {

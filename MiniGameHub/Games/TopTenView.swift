@@ -19,6 +19,11 @@ struct TopTenView: View {
         ) {
             GameColumn {
                 VStack(spacing: 6) {
+                    Image("hub_topten")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 60, height: 60)
+                        .accessibilityHidden(true)
                     Text(game.list.title)
                         .bodyText(22, weight: .heavy)
                         .multilineTextAlignment(.center)

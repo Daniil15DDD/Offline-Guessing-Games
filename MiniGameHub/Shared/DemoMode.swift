@@ -40,7 +40,7 @@ enum DemoMode {
     static func critter() -> CritterGame {
         let game = CritterGame()
         guard isOn else { return game }
-        for index in [1, 36, 49, 60] where Critters.all[index].id != game.target.id {
+        for index in [1, 39, 47, 54] where Critters.all[index].id != game.target.id {
             game.guess(Critters.all[index])
         }
         return game
