@@ -14,7 +14,7 @@ struct HubView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(Haptics.enabledKey) private var hapticsEnabled = true
     @AppStorage(Sound.enabledKey) private var soundEnabled = true
-    @State private var showStats = DemoMode.flag("stats")
+    @State private var showStats = false
     @AppStorage("hub.showDaily") private var showDaily = true
     @State private var path: [GameRoute] = []
     @State private var confirmReset = false
@@ -254,7 +254,6 @@ struct HubView: View {
     /// Launching with `-startGame globe` (or any other game's raw name from
     /// `GameKind`) opens that game directly in free play. Handy while testing.
     private func openRequestedGame() {
-        if DemoMode.flag("sound") { Sound.win() }
         guard path.isEmpty,
               let raw = UserDefaults.standard.string(forKey: "startGame"),
               let kind = GameKind(rawValue: raw) else { return }

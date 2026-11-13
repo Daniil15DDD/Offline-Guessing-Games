@@ -8,7 +8,7 @@ struct GettingWarmerView: View {
     @State private var longitude = 10.0
     /// Where the globe was pointing when the current drag began.
     @State private var dragStart: (latitude: Double, longitude: Double)?
-    @State private var zoom = DemoMode.flag("zoom") ? 2.5 : 1.0
+    @State private var zoom = 1.0
 
     private let kind = GameKind.globe
 

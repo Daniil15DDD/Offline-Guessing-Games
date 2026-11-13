@@ -16,7 +16,7 @@ struct GameChrome<Content: View>: View {
     @EnvironmentObject private var daily: DailyStore
     @Environment(\.dismiss) private var dismiss
     @State private var isNewBest = false
-    @State private var showRules = DemoMode.flag("rules")
+    @State private var showRules = false
 
     init(
         kind: GameKind,
