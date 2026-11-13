@@ -566,6 +566,11 @@ do {
         game.next()
     }
     expect(game.isFinished && game.score == 100 + 5 * 10, "rare run total, got \(game.score)")
+    expect(game.log.count == RareGame.rounds, "the dive log has a line per prompt, got \(game.log.count)")
+    expect(game.log[0].points == 100 && game.log[0].tier == 5 && game.log[0].answer != nil, "the log records the rare answer")
+    expect(game.log[1].points == 0 && game.log[1].answer == nil, "the log records the time out")
+    game.restart()
+    expect(game.log.isEmpty, "a new dive starts with an empty log")
 }
 
 // MARK: - Ballpark
@@ -656,6 +661,8 @@ do {
     game.guess = game.target
     game.lockIn()
     expect(game.phase == .revealed && game.lastPoints == 100, "the same colour scores 100")
+    expect(HueGame.matchPercent(target: game.target, guess: game.guess) == 100, "the same colour is a 100 percent match")
+    expect(HueGame.matchPercent(target: white, guess: black) == 0, "white against black is a 0 percent match")
     for _ in 1..<HueGame.rounds {
         game.next()
         game.tick(now: start)

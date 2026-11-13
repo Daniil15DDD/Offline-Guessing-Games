@@ -105,6 +105,8 @@ struct HueRecallView: View {
                 compare("Yours", game.guess)
             }
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            Text("\(HueGame.matchPercent(target: game.target, guess: game.guess))% match")
+                .bodyText(20, weight: .heavy)
             PointsBadge(points: game.lastPoints)
             Button(game.roundIndex + 1 >= HueGame.rounds ? "See result" : "Next colour") {
                 game.next()

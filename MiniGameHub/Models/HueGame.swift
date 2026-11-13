@@ -105,6 +105,11 @@ final class HueGame: ObservableObject {
         }
     }
 
+    /// How alike two colours are, from 0 to 100 percent.
+    static func matchPercent(target: HSB, guess: HSB) -> Int {
+        Int(((1 - target.distance(to: guess)) * 100).rounded())
+    }
+
     static func points(target: HSB, guess: HSB) -> Int {
         Scoring.closeness(error: target.distance(to: guess), perfect: 0.03, zero: 0.45)
     }

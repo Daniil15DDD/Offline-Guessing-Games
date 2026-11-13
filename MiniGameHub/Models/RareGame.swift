@@ -4,6 +4,16 @@ import Combine
 /// Rare Find: seven "name a ..." prompts against the clock. Any accepted
 /// answer scores, but the less obvious it is, the more it is worth.
 final class RareGame: ObservableObject {
+    /// One line of the dive log: what was asked and what it earned.
+    struct LogEntry: Identifiable, Equatable {
+        let id: Int
+        let prompt: String
+        /// Nil when time ran out.
+        let answer: String?
+        let tier: Int?
+        let points: Int
+    }
+
     static let rounds = 7
     static let secondsPerPrompt = 25.0
     /// A wrong answer does not end the round. It costs this many seconds.
@@ -16,7 +26,22 @@ final class RareGame: ObservableObject {
     /// The answer that scored this round, if any.
     @Published private(set) var accepted: RareAnswer?
     @Published private(set) var rejected: [String] = []
-    @Published private(set) var roundOver = false
+    @Published private(set) var roundOver = false {
+        didSet {
+            // Write the log line the moment a round ends.
+            if roundOver && !oldValue {
+                log.append(LogEntry(
+                    id: log.count,
+                    prompt: prompt.text,
+                    answer: accepted?.name,
+                    tier: accepted?.tier,
+                    points: lastPoints
+                ))
+            }
+        }
+    }
+    /// Every finished prompt in this run, in order.
+    @Published private(set) var log: [LogEntry] = []
     @Published private(set) var lastPoints = 0
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
@@ -38,6 +63,7 @@ final class RareGame: ObservableObject {
         score = 0
         roundIndex = 0
         isFinished = false
+        log = []
         deal()
     }
 

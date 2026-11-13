@@ -138,8 +138,40 @@ struct DeepCatchView: View {
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
             .padding(.top, 4)
+
+            if game.roundIndex + 1 >= RareGame.rounds {
+                diveLog
+            }
         }
         .panel()
+    }
+
+    /// The whole dive, shown after the last prompt.
+    private var diveLog: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("DIVE LOG")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundColor(Theme.textSecondary)
+            ForEach(game.log) { entry in
+                HStack(alignment: .top, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(entry.answer ?? "No answer")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundColor(entry.answer == nil ? Theme.bad : .white)
+                        Text(entry.prompt)
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .foregroundColor(Theme.textSecondary)
+                    }
+                    Spacer(minLength: 4)
+                    Text(entry.points > 0 ? "\(NumberText.grouped(Double(entry.points * Self.metresPerPoint))) m" : "0 m")
+                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundColor(entry.points > 0 ? Theme.good : Theme.textSecondary)
+                }
+            }
+        }
+        .padding(.top, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     /// Rarer answers hook bigger things.
