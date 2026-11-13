@@ -104,6 +104,88 @@ do {
     expect(Deck.next("test", count: 0) == 0, "empty deck is safe")
 }
 
+// MARK: - Daily mode
+
+do {
+    var first = SeededGenerator(seed: 42)
+    var second = SeededGenerator(seed: 42)
+    var third = SeededGenerator(seed: 43)
+    let a = (0..<5).map { _ in first.next() }
+    let b = (0..<5).map { _ in second.next() }
+    let c = (0..<5).map { _ in third.next() }
+    expect(a == b && a != c, "the same seed gives the same numbers")
+
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+    func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int = 12) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day, hour: hour))!
+    }
+    expect(Daily.dayNumber(for: date(2026, 1, 1), calendar: calendar) == 0, "day zero")
+    expect(Daily.dayNumber(for: date(2026, 1, 2, 0), calendar: calendar) == 1, "the day changes at midnight")
+    expect(Daily.dayNumber(for: date(2026, 1, 1, 23), calendar: calendar) == 0, "late evening is still the same day")
+    expect(Daily.dayNumber(for: date(2027, 1, 1), calendar: calendar) == 365, "a year later")
+
+    // Every puzzle is used once before any repeats.
+    var seen: [Int] = []
+    for day in 0..<20 { seen += Daily.indices("test", count: 20, take: 1, day: day) }
+    expect(Set(seen).count == 20, "twenty days cover twenty puzzles")
+    var trio: [Int] = []
+    for day in 0..<4 { trio += Daily.indices("test3", count: 12, take: 3, day: day) }
+    expect(Set(trio).count == 12, "three a day covers twelve puzzles in four days")
+    expect(Daily.indices("test", count: 20, take: 1, day: 7) == Daily.indices("test", count: 20, take: 1, day: 7), "a day always gives the same puzzle")
+    expect(Daily.indices("test", count: 5, take: 9, day: 3).count == 5, "never more puzzles than exist")
+    for day in 0..<60 {
+        let picks = Daily.indices("test7", count: 39, take: 7, day: day)
+        expect(picks.count == 7 && Set(picks).count == 7, "seven different prompts on day \(day)")
+    }
+
+    // Two launches on the same day see the same game.
+    let today = PlayMode.daily(day: 123)
+    expect(GlobeGame(mode: today).target == GlobeGame(mode: today).target, "daily country is fixed")
+    expect(GlobeGame(mode: today).target != GlobeGame(mode: .daily(day: 124)).target, "tomorrow is a different country")
+    expect(FourfoldGame(mode: today).board == FourfoldGame(mode: today).board, "daily word board is fixed, tile order included")
+    expect(TopTenGame(mode: today).list == TopTenGame(mode: today).list, "daily list is fixed")
+    expect(CritterGame(mode: today).target == CritterGame(mode: today).target, "daily animal is fixed")
+    expect(PriceGame(mode: today).item == PriceGame(mode: today).item, "daily price item is fixed")
+    expect(RareGame(mode: today).prompt == RareGame(mode: today).prompt, "daily prompt is fixed")
+    expect(BallparkGame(mode: today).question == BallparkGame(mode: today).question, "daily question is fixed")
+    expect(TrendGame(mode: today).series == TrendGame(mode: today).series, "daily chart is fixed")
+    let scaleA = ScaleGame(mode: today), scaleB = ScaleGame(mode: today)
+    expect(scaleA.pair == scaleB.pair && scaleA.slider == scaleB.slider, "daily size pair is fixed")
+    expect(HueGame(mode: today).target == HueGame(mode: today).target, "daily colour is fixed")
+    expect(PitchGame(mode: today).targetHz == PitchGame(mode: today).targetHz, "daily note is fixed")
+    expect(BeatGame(mode: today).targetBPM == BeatGame(mode: today).targetBPM, "daily beat is fixed")
+    let hue = HueGame(mode: today)
+    let firstColour = hue.target
+    hue.restart()
+    expect(hue.target == firstColour, "restarting a daily gives the same colours")
+
+    // The results store.
+    let keys = ["daily.day", "daily.results", "daily.streak", "daily.lastPlayedDay"]
+    keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+    let store = DailyStore(today: 500)
+    expect(store.finishedCount == 0 && store.streak == 0, "a new store is empty")
+    expect(store.record(80, for: "globe", day: 500), "a daily result is saved")
+    expect(!store.record(95, for: "globe", day: 500), "only the first result counts")
+    expect(store.score(for: "globe") == 80 && store.streak == 1, "result and streak after one game")
+    expect(!store.record(50, for: "hue", day: 499), "yesterday's puzzle cannot be recorded today")
+    store.record(60, for: "hue", day: 500)
+    expect(store.finishedCount == 2 && store.totalToday == 140 && store.streak == 1, "two games on one day is still one streak day")
+    let reopened = DailyStore(today: 500)
+    expect(reopened.score(for: "hue") == 60 && reopened.streak == 1, "results survive a relaunch")
+    let nextDay = DailyStore(today: 501)
+    expect(nextDay.finishedCount == 0 && nextDay.streak == 1, "a new day starts empty but keeps the streak alive")
+    nextDay.record(10, for: "beat", day: 501)
+    expect(nextDay.streak == 2, "playing on the next day extends the streak")
+    let afterGap = DailyStore(today: 504)
+    expect(afterGap.streak == 0, "missing a day ends the streak")
+    afterGap.record(10, for: "beat", day: 504)
+    expect(afterGap.streak == 1, "the streak starts again at one")
+    store.refresh(today: 504)
+    expect(store.day == 504 && store.score(for: "beat") == 10, "refresh rolls over to the new day")
+    keys.forEach { UserDefaults.standard.removeObject(forKey: $0) }
+}
+
 // MARK: - Content checks
 
 do {
@@ -144,6 +226,42 @@ for (number, puzzle) in GroupPuzzles.all.enumerated() {
     expect(puzzle.words.allSatisfy { $0 == $0.uppercased() && $0.count <= 11 }, "puzzle \(number) words fit a tile")
 }
 expect(GroupPuzzles.all.count >= 20, "at least twenty word puzzles")
+
+do {
+    // The word bank: every category can supply four words, and the same
+    // word is never listed twice in one category.
+    for category in WordBank.categories {
+        expect(category.words.count >= 4, "\(category.title) has at least four words")
+        expect(Set(category.words).count == category.words.count, "\(category.title) has no repeated word")
+        expect(category.words.allSatisfy { $0 == $0.uppercased() && $0.count <= 11 && !$0.contains(" ") }, "\(category.title) words fit a tile")
+    }
+    expect(WordBank.categories.count >= 90, "a large word bank, got \(WordBank.categories.count)")
+
+    // Generated puzzles: sixteen different words and exactly one solution.
+    var distinct = Set<String>()
+    var withTrap = 0
+    for number in GroupPuzzles.all.count..<(GroupPuzzles.all.count + 400) {
+        let puzzle = GroupPuzzles.puzzle(number: number)
+        expect(puzzle.groups.count == 4 && Set(puzzle.words).count == 16, "generated puzzle \(number) has sixteen different words")
+        expect(GroupPuzzles.solutionCount(words: puzzle.words) == 1, "generated puzzle \(number) has exactly one solution")
+        expect(puzzle == GroupPuzzles.puzzle(number: number), "puzzle \(number) is the same every time")
+        distinct.insert(puzzle.words.sorted().joined(separator: ","))
+        let titles = Set(puzzle.groups.map(\.title))
+        if puzzle.words.contains(where: { word in
+            (WordBank.membership[word] ?? []).filter { titles.contains(WordBank.categories[$0].title) }.count > 1
+        }) {
+            withTrap += 1
+        }
+    }
+    expect(distinct.count >= 395, "generated puzzles are different from each other (\(distinct.count) of 400)")
+    expect(withTrap >= 100, "many generated puzzles contain a trap word (\(withTrap) of 400)")
+
+    // The solver itself: a set with two possible splits is rejected.
+    let ambiguous = ["MERCURY", "VENUS", "MARS", "SATURN", "JUPITER", "NEPTUNE", "APOLLO", "DIANA",
+                     "IRON", "COPPER", "TIN", "LEAD", "ROBIN", "CRANE", "SWIFT", "FINCH"]
+    expect(GroupPuzzles.solutionCount(words: ambiguous) >= 2, "an ambiguous set is detected")
+    expect(GroupPuzzles.poolSize >= 1000, "a thousand Fourfold puzzles")
+}
 
 for list in TopTenLists.all {
     expect(list.entries.count == 10, "\(list.title) has ten entries")
@@ -203,7 +321,8 @@ for prompt in RarePrompts.all {
 }
 expect(RarePrompts.all.count >= 21, "enough prompts for three different runs")
 
-expect(BallparkQuestions.all.allSatisfy { $0.answer > 0 && !$0.unit.isEmpty }, "ballpark answers are valid")
+expect(BallparkQuestions.all.allSatisfy { $0.answer > 0 }, "ballpark answers are valid")
+expect(BallparkQuestions.all.count >= 150, "plenty of ballpark questions, got \(BallparkQuestions.all.count)")
 expect(Set(BallparkQuestions.all.map(\.text)).count == BallparkQuestions.all.count, "ballpark questions are unique")
 
 for series in TrendSeriesData.all {
@@ -216,6 +335,7 @@ for series in TrendSeriesData.all {
     expect(TrendGame.gap(drawn: perfect, series: series) == 0, "\(series.title): perfect drawing has no gap")
 }
 
+expect(ScalePairs.all.count >= 500, "hundreds of size comparisons, got \(ScalePairs.all.count)")
 for pair in ScalePairs.all {
     expect(pair.ratio >= ScalePairs.minRatio && pair.ratio <= ScalePairs.maxRatio, "\(pair.referenceName) vs \(pair.targetName) fits the slider")
     let slider = ScaleGame.slider(forRatio: pair.ratio)

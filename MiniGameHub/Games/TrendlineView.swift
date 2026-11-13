@@ -1,15 +1,22 @@
 import SwiftUI
 
 struct TrendlineView: View {
-    @StateObject private var game = DemoMode.trend()
+    @StateObject private var game: TrendGame
+    private let mode: PlayMode
     /// Last hidden point touched during the current drag, for filling gaps.
     @State private var lastTouched: Int?
 
     private let kind = GameKind.trend
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: TrendGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "Chart \(game.roundIndex + 1) of \(TrendGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,

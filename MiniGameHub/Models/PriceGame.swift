@@ -33,11 +33,13 @@ final class PriceGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private let items: [PriceItem]
     private var queue: [Int] = []
 
-    init(items: [PriceItem] = PriceItems.all) {
+    init(mode: PlayMode = .free, items: [PriceItem] = PriceItems.all) {
         precondition(!items.isEmpty, "Price Point needs items")
+        self.mode = mode
         self.items = items
         self.item = items[0]
         deal()
@@ -51,7 +53,7 @@ final class PriceGame: ObservableObject {
     }
 
     private func deal() {
-        queue = Deck.draw("prices", count: items.count, take: Self.rounds)
+        queue = Dealer(key: "prices", mode: mode).indices(count: items.count, take: Self.rounds)
         startRound()
     }
 

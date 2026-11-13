@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct GettingWarmerView: View {
-    @StateObject private var game = DemoMode.globe()
+    @StateObject private var game: GlobeGame
+    private let mode: PlayMode
     @State private var text = ""
     @State private var latitude = 20.0
     @State private var longitude = 10.0
@@ -10,9 +11,15 @@ struct GettingWarmerView: View {
 
     private let kind = GameKind.globe
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: GlobeGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: game.guesses.isEmpty ? "Find the mystery country" : "\(game.guesses.count) guessed",
             score: game.score,
             isFinished: game.isFinished,

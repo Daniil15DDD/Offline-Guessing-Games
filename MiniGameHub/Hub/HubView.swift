@@ -1,10 +1,20 @@
 import SwiftUI
 
-/// The main menu: a tile per game, each showing the saved best score.
+/// Where a tap on the menu leads: a game, in daily mode or free play.
+struct GameRoute: Hashable {
+    let kind: GameKind
+    let mode: PlayMode
+}
+
+/// The main menu: a tile per game. A switch at the top chooses between
+/// today's daily puzzles and free play.
 struct HubView: View {
     @EnvironmentObject private var scores: HighScoreStore
+    @EnvironmentObject private var daily: DailyStore
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage(Haptics.enabledKey) private var hapticsEnabled = true
-    @State private var path: [GameKind] = []
+    @AppStorage("hub.showDaily") private var showDaily = true
+    @State private var path: [GameRoute] = []
     @State private var confirmReset = false
 
     private let columns = [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)]
@@ -15,12 +25,26 @@ struct HubView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     header
 
+                    modeSwitch
+
                     LazyVGrid(columns: columns, spacing: 14) {
                         ForEach(GameKind.allCases) { kind in
-                            NavigationLink(value: kind) {
-                                GameTile(kind: kind, best: scores.best(for: kind))
+                            if showDaily {
+                                let done = daily.score(for: kind.rawValue)
+                                NavigationLink(value: GameRoute(kind: kind, mode: .daily(day: daily.day))) {
+                                    GameTile(kind: kind, footer: done.map { "Today: \($0) of \(kind.maxScore)" } ?? "Play today's puzzle",
+                                             progress: done.map { fraction($0, of: kind.maxScore) } ?? 0, isDone: done != nil)
+                                }
+                                .buttonStyle(TileButtonStyle())
+                                .disabled(done != nil)
+                            } else {
+                                let best = scores.best(for: kind)
+                                NavigationLink(value: GameRoute(kind: kind, mode: .free)) {
+                                    GameTile(kind: kind, footer: best > 0 ? "Best \(best) of \(kind.maxScore)" : "Not played yet",
+                                             progress: fraction(best, of: kind.maxScore), isDone: false)
+                                }
+                                .buttonStyle(TileButtonStyle())
                             }
-                            .buttonStyle(TileButtonStyle())
                         }
                     }
 
@@ -43,25 +67,31 @@ struct HubView: View {
                 .ignoresSafeArea()
             )
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: GameKind.self) { kind in
-                switch kind {
-                case .globe: GettingWarmerView()
-                case .fourfold: FourfoldView()
-                case .topTen: TopTenView()
-                case .critter: CritterCluesView()
-                case .deep: DeepCatchView()
-                case .price: PricePointView()
-                case .ballpark: BallparkView()
-                case .trend: TrendlineView()
-                case .scale: ScaleItView()
-                case .hue: HueRecallView()
-                case .pitch: PitchMatchView()
-                case .beat: BeatKeeperView()
+            .navigationDestination(for: GameRoute.self) { route in
+                switch route.kind {
+                case .globe: GettingWarmerView(mode: route.mode)
+                case .fourfold: FourfoldView(mode: route.mode)
+                case .topTen: TopTenView(mode: route.mode)
+                case .critter: CritterCluesView(mode: route.mode)
+                case .deep: DeepCatchView(mode: route.mode)
+                case .price: PricePointView(mode: route.mode)
+                case .ballpark: BallparkView(mode: route.mode)
+                case .trend: TrendlineView(mode: route.mode)
+                case .scale: ScaleItView(mode: route.mode)
+                case .hue: HueRecallView(mode: route.mode)
+                case .pitch: PitchMatchView(mode: route.mode)
+                case .beat: BeatKeeperView(mode: route.mode)
                 }
             }
         }
         .tint(.white)
         .onAppear(perform: openRequestedGame)
+        .onChange(of: scenePhase) { phase in
+            // Midnight may have passed while the app was in the background.
+            if phase == .active {
+                daily.refresh()
+            }
+        }
         .confirmationDialog(
             "Reset all high scores?",
             isPresented: $confirmReset,
@@ -96,13 +126,59 @@ struct HubView: View {
                 .font(.system(size: 36, weight: .heavy, design: .rounded))
                 .foregroundColor(.white)
 
-            HStack(spacing: 8) {
-                Image(systemName: "star.fill").foregroundColor(Color(hex: 0xF5C542))
-                Text("\(NumberText.grouped(Double(totalBest))) points across \(GameKind.allCases.count) games")
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.85))
+            if showDaily {
+                HStack(spacing: 14) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill").foregroundColor(Theme.good)
+                        Text("\(daily.finishedCount) of \(GameKind.allCases.count) done today")
+                    }
+                    HStack(spacing: 6) {
+                        Image(systemName: "flame.fill").foregroundColor(Color(hex: 0xFF8A3D))
+                        Text(daily.streak == 1 ? "1 day streak" : "\(daily.streak) day streak")
+                    }
+                }
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.85))
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: "star.fill").foregroundColor(Color(hex: 0xF5C542))
+                    Text("\(NumberText.grouped(Double(totalBest))) points across \(GameKind.allCases.count) games")
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.85))
+                }
             }
         }
+    }
+
+    /// Daily or free play.
+    private var modeSwitch: some View {
+        HStack(spacing: 4) {
+            switchButton("Daily", systemImage: "calendar", isOn: showDaily) {
+                showDaily = true
+            }
+            switchButton("Free play", systemImage: "infinity", isOn: !showDaily) {
+                showDaily = false
+            }
+        }
+        .padding(4)
+        .background(Capsule().fill(Color.white.opacity(0.1)))
+    }
+
+    private func switchButton(_ title: String, systemImage: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundColor(isOn ? Color(hex: 0x14172A) : .white.opacity(0.8))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(Capsule().fill(isOn ? Color.white : Color.clear))
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+
+    private func fraction(_ score: Int, of maximum: Int) -> CGFloat {
+        maximum > 0 ? CGFloat(min(max(score, 0), maximum)) / CGFloat(maximum) : 0
     }
 
     private var settings: some View {
@@ -140,26 +216,32 @@ struct HubView: View {
     }
 
     /// Launching with `-startGame globe` (or any other game's raw name from
-    /// `GameKind`) opens that game directly. Handy while testing.
+    /// `GameKind`) opens that game directly in free play. Handy while testing.
     private func openRequestedGame() {
         guard path.isEmpty,
               let raw = UserDefaults.standard.string(forKey: "startGame"),
               let kind = GameKind(rawValue: raw) else { return }
-        path = [kind]
+        path = [GameRoute(kind: kind, mode: .free)]
     }
 }
 
 private struct GameTile: View {
     let kind: GameKind
-    let best: Int
-
-    private var progress: CGFloat {
-        kind.maxScore > 0 ? CGFloat(min(best, kind.maxScore)) / CGFloat(kind.maxScore) : 0
-    }
+    /// The line under the progress bar.
+    let footer: String
+    /// How full the bar is, from 0 to 1.
+    let progress: CGFloat
+    /// Today's daily is finished: show a tick and dim the tile.
+    let isDone: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
+                if isDone {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(.white)
+                }
                 Spacer()
                 Image(kind.art)
                     .resizable()
@@ -190,13 +272,13 @@ private struct GameTile: View {
                     Capsule().fill(Color.black.opacity(0.22))
                     Capsule()
                         .fill(Color.white)
-                        .frame(width: max(geometry.size.width * progress, best > 0 ? 6 : 0))
+                        .frame(width: max(geometry.size.width * progress, progress > 0 ? 6 : 0))
                 }
             }
             .frame(height: 6)
             .padding(.top, 8)
 
-            Text(best > 0 ? "Best \(best) of \(kind.maxScore)" : "Not played yet")
+            Text(footer)
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundColor(.white.opacity(0.9))
                 .padding(.top, 5)
@@ -215,8 +297,10 @@ private struct GameTile: View {
                 )
         )
         .shadow(color: kind.colors[1].opacity(0.35), radius: 12, x: 0, y: 8)
+        .saturation(isDone ? 0.55 : 1)
+        .opacity(isDone ? 0.75 : 1)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(kind.title). \(kind.tagline) Best score \(best) of \(kind.maxScore).")
+        .accessibilityLabel("\(kind.title). \(kind.tagline) \(footer).")
     }
 }
 

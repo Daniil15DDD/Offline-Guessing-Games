@@ -17,36 +17,80 @@ struct ScalePair: Equatable {
     var ratio: Double { targetSize / referenceSize }
 }
 
-/// Comparisons for Scale It. Sizes are standard reference figures.
+/// Comparisons for Scale It, built from families of things with well-known
+/// sizes. Every two members of a family make a pair (in both directions),
+/// as long as one is not too many times bigger than the other.
 enum ScalePairs {
-    /// The slider covers these ratios, so every pair must sit inside them.
+    /// The slider covers these ratios.
     static let minRatio = 0.05
     static let maxRatio = 6.0
+    /// Pairs are only made inside this narrower band, so the answer is never
+    /// right at the end of the slider.
+    static let smallestPair = 0.08
+    static let largestPair = 5.0
 
-    static let all: [ScalePair] = [
-        ScalePair(shape: .circle, referenceName: "Earth", referenceSize: 12_742, targetName: "Moon", targetSize: 3_474, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Moon", referenceSize: 3_474, targetName: "Earth", targetSize: 12_742, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Earth", referenceSize: 12_742, targetName: "Mars", targetSize: 6_779, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Earth", referenceSize: 12_742, targetName: "Venus", targetSize: 12_104, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Neptune", referenceSize: 49_244, targetName: "Earth", targetSize: 12_742, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Jupiter", referenceSize: 139_820, targetName: "Saturn (without rings)", targetSize: 116_460, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Jupiter", referenceSize: 139_820, targetName: "Earth", targetSize: 12_742, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Sun", referenceSize: 1_392_000, targetName: "Jupiter", targetSize: 139_820, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Moon", referenceSize: 3_474, targetName: "Pluto", targetSize: 2_377, unit: "km across"),
-        ScalePair(shape: .circle, referenceName: "Basketball", referenceSize: 24, targetName: "Tennis ball", targetSize: 6.7, unit: "cm across"),
-        ScalePair(shape: .circle, referenceName: "Football (soccer ball)", referenceSize: 22, targetName: "Golf ball", targetSize: 4.27, unit: "cm across"),
-        ScalePair(shape: .circle, referenceName: "Golf ball", referenceSize: 4.27, targetName: "Tennis ball", targetSize: 6.7, unit: "cm across"),
-        ScalePair(shape: .circle, referenceName: "Tennis ball", referenceSize: 6.7, targetName: "Table tennis ball", targetSize: 4.0, unit: "cm across"),
-        ScalePair(shape: .circle, referenceName: "Basketball hoop", referenceSize: 45.7, targetName: "Basketball", targetSize: 24, unit: "cm across"),
-        ScalePair(shape: .bar, referenceName: "Eiffel Tower", referenceSize: 330, targetName: "Statue of Liberty", targetSize: 93, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Statue of Liberty", referenceSize: 93, targetName: "Eiffel Tower", targetSize: 330, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Burj Khalifa", referenceSize: 828, targetName: "Eiffel Tower", targetSize: 330, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Burj Khalifa", referenceSize: 828, targetName: "Empire State Building", targetSize: 443, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Great Pyramid of Giza", referenceSize: 139, targetName: "Statue of Liberty", targetSize: 93, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Big Ben's tower", referenceSize: 96, targetName: "Leaning Tower of Pisa", targetSize: 56, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Mount Everest", referenceSize: 8_849, targetName: "Mont Blanc", targetSize: 4_806, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Mount Everest", referenceSize: 8_849, targetName: "Kilimanjaro", targetSize: 5_895, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Adult human", referenceSize: 1.7, targetName: "Giraffe", targetSize: 5.5, unit: "m tall"),
-        ScalePair(shape: .bar, referenceName: "Giraffe", referenceSize: 5.5, targetName: "Adult human", targetSize: 1.7, unit: "m tall")
+    struct Family {
+        let shape: ScalePair.Shape
+        let unit: String
+        let members: [(String, Double)]
+    }
+
+    static let families: [Family] = [
+        Family(shape: .circle, unit: "km across", members: [
+            ("Sun", 1_392_000), ("Jupiter", 139_820), ("Saturn (without rings)", 116_460),
+            ("Uranus", 50_724), ("Neptune", 49_244), ("Earth", 12_742), ("Venus", 12_104),
+            ("Mars", 6_779), ("Ganymede", 5_268), ("Titan", 5_150), ("Mercury", 4_879),
+            ("Io", 3_643), ("Moon", 3_474), ("Europa", 3_122), ("Pluto", 2_377)
+        ]),
+        Family(shape: .circle, unit: "cm across", members: [
+            ("Basketball", 24), ("Football (soccer ball)", 22), ("Bowling ball", 21.8),
+            ("Volleyball", 21), ("Softball", 9.7), ("Baseball", 7.4), ("Cricket ball", 7.2),
+            ("Tennis ball", 6.7), ("Pool ball", 5.7), ("Golf ball", 4.27),
+            ("Table tennis ball", 4.0), ("Basketball hoop", 45.7)
+        ]),
+        Family(shape: .bar, unit: "m tall", members: [
+            ("Burj Khalifa", 828), ("Tokyo Skytree", 634), ("Shanghai Tower", 632),
+            ("CN Tower", 553), ("One World Trade Center", 541), ("Taipei 101", 508),
+            ("Petronas Towers", 452), ("Empire State Building", 443), ("Eiffel Tower", 330),
+            ("Chrysler Building", 319), ("The Shard", 310), ("Gateway Arch", 192),
+            ("Space Needle", 184), ("Washington Monument", 169), ("Great Pyramid of Giza", 139),
+            ("St Peter's Basilica", 137), ("London Eye", 135), ("Big Ben's tower", 96),
+            ("Statue of Liberty", 93), ("Taj Mahal", 73), ("Sydney Opera House", 65),
+            ("Leaning Tower of Pisa", 56), ("Arc de Triomphe", 50)
+        ]),
+        Family(shape: .bar, unit: "m high", members: [
+            ("Mount Everest", 8_849), ("K2", 8_611), ("Aconcagua", 6_961), ("Denali", 6_190),
+            ("Kilimanjaro", 5_895), ("Mount Elbrus", 5_642), ("Mount Kenya", 5_199),
+            ("Vinson Massif", 4_892), ("Mont Blanc", 4_806), ("Matterhorn", 4_478),
+            ("Mount Rainier", 4_392), ("Mauna Kea", 4_207), ("Mount Fuji", 3_776),
+            ("Aoraki / Mount Cook", 3_724), ("Mount Olympus", 2_917), ("Ben Nevis", 1_345),
+            ("Vesuvius", 1_281), ("Table Mountain", 1_085)
+        ]),
+        Family(shape: .bar, unit: "m tall", members: [
+            ("Giraffe", 5.5), ("African elephant", 3.2), ("Ostrich", 2.5),
+            ("Adult human", 1.7), ("Emperor penguin", 1.1)
+        ])
     ]
+
+    static let all: [ScalePair] = {
+        var pairs: [ScalePair] = []
+        for family in families {
+            for reference in family.members {
+                for target in family.members where target.0 != reference.0 {
+                    let ratio = target.1 / reference.1
+                    // Skip near-twins, where the right answer is "the same".
+                    guard ratio >= smallestPair, ratio <= largestPair, abs(ratio - 1) > 0.04 else { continue }
+                    pairs.append(ScalePair(
+                        shape: family.shape,
+                        referenceName: reference.0,
+                        referenceSize: reference.1,
+                        targetName: target.0,
+                        targetSize: target.1,
+                        unit: family.unit
+                    ))
+                }
+            }
+        }
+        return pairs
+    }()
 }

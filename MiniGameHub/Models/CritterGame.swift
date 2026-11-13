@@ -35,10 +35,12 @@ final class CritterGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private let critters: [Critter]
 
-    init(critters: [Critter] = Critters.all) {
+    init(mode: PlayMode = .free, critters: [Critter] = Critters.all) {
         precondition(!critters.isEmpty, "Critter Clues needs animals")
+        self.mode = mode
         self.critters = critters
         self.target = critters[0]
         deal()
@@ -49,7 +51,7 @@ final class CritterGame: ObservableObject {
     }
 
     private func deal() {
-        target = critters[Deck.next("critters", count: critters.count)]
+        target = critters[Dealer(key: "critters", mode: mode).index(count: critters.count)]
         rows = []
         solved = false
         isOver = false

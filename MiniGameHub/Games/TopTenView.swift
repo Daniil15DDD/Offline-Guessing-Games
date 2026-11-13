@@ -1,14 +1,21 @@
 import SwiftUI
 
 struct TopTenView: View {
-    @StateObject private var game = DemoMode.topTen()
+    @StateObject private var game: TopTenGame
+    private let mode: PlayMode
     @State private var text = ""
 
     private let kind = GameKind.topTen
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: TopTenGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "\(game.found.count) of 10 found",
             score: game.score,
             isFinished: game.isFinished,

@@ -1,24 +1,36 @@
 import SwiftUI
 
 struct ScaleItView: View {
-    @StateObject private var game = DemoMode.scale()
+    @StateObject private var game: ScaleGame
+    private let mode: PlayMode
 
     private let kind = GameKind.scale
     /// The larger of the two shapes is always drawn this big.
     private let fullSize: CGFloat = 190
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: ScaleGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "Round \(game.roundIndex + 1) of \(ScaleGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,
             onRestart: { game.restart() }
         ) {
             GameColumn {
-                Text("Resize the \(game.pair.targetName) until the two look true to life.")
-                    .bodyText(17)
-                    .multilineTextAlignment(.center)
+                VStack(spacing: 4) {
+                    Text("\(game.pair.targetName) next to \(game.pair.referenceName)")
+                        .bodyText(18, weight: .heavy)
+                        .multilineTextAlignment(.center)
+                    Text("Slide until the one on the right is its true size.")
+                        .caption()
+                        .multilineTextAlignment(.center)
+                }
 
                 HStack(alignment: .bottom, spacing: 18) {
                     figure(name: game.pair.referenceName, size: referenceSize, color: Color(hex: 0x8FA0D8))

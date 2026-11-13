@@ -20,13 +20,12 @@ final class FourfoldGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
-    private let puzzles: [GroupPuzzle]
+    let mode: PlayMode
     private var tried: Set<String> = []
 
-    init(puzzles: [GroupPuzzle] = GroupPuzzles.all) {
-        precondition(!puzzles.isEmpty, "Fourfold needs puzzles")
-        self.puzzles = puzzles
-        self.puzzle = puzzles[0]
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        self.puzzle = GroupPuzzles.all[0]
         deal()
     }
 
@@ -35,8 +34,9 @@ final class FourfoldGame: ObservableObject {
     }
 
     private func deal() {
-        puzzle = puzzles[Deck.next("fourfold", count: puzzles.count)]
-        board = puzzle.words.shuffled()
+        var dealer = Dealer(key: "fourfold", mode: mode)
+        puzzle = GroupPuzzles.puzzle(number: dealer.index(count: GroupPuzzles.poolSize))
+        board = dealer.shuffled(puzzle.words)
         selected = []
         solvedGroups = []
         foundByPlayer = 0

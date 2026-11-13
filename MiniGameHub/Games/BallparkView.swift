@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct BallparkView: View {
-    @StateObject private var game = DemoMode.ballpark()
+    @StateObject private var game: BallparkGame
+    private let mode: PlayMode
     @State private var text = ""
     @State private var multiplier = 1.0
 
@@ -15,9 +16,15 @@ struct BallparkView: View {
         return number * multiplier
     }
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: BallparkGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "Question \(game.roundIndex + 1) of \(BallparkGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,
@@ -36,7 +43,7 @@ struct BallparkView: View {
                     Text(game.question.text)
                         .bodyText(22, weight: .heavy)
                         .multilineTextAlignment(.center)
-                    Text("Answer in \(game.question.unit)")
+                    Text(game.question.unit.isEmpty ? "Answer with a number" : "Answer in \(game.question.unit)")
                         .caption()
                 }
                 .panel()

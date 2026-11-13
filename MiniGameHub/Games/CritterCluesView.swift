@@ -1,15 +1,22 @@
 import SwiftUI
 
 struct CritterCluesView: View {
-    @StateObject private var game = DemoMode.critter()
+    @StateObject private var game: CritterGame
+    private let mode: PlayMode
     @State private var text = ""
 
     private let kind = GameKind.critter
     private let headings = ["Class", "Diet", "Home", "Legs", "Region", "Weight"]
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: CritterGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "Guess \(min(game.rows.count + 1, CritterGame.maxGuesses)) of \(CritterGame.maxGuesses)",
             score: game.score,
             isFinished: game.isFinished,
@@ -192,6 +199,7 @@ private struct ClueRow: View {
         if kilograms >= 1 {
             return "\(NumberText.trimmed(kilograms, maxDecimals: 1)) kg"
         }
-        return "\(NumberText.trimmed(kilograms * 1000, maxDecimals: 1)) g"
+        let grams = kilograms * 1000
+        return "\(NumberText.trimmed(grams, maxDecimals: grams < 1 ? 2 : 1)) g"
     }
 }

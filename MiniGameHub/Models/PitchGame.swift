@@ -21,7 +21,12 @@ final class PitchGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
-    init() {
+    let mode: PlayMode
+    private var dealer: Dealer
+
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        self.dealer = Dealer(key: "pitch", mode: mode)
         startRound()
     }
 
@@ -52,18 +57,19 @@ final class PitchGame: ObservableObject {
         score = 0
         roundIndex = 0
         isFinished = false
+        dealer = Dealer(key: "pitch", mode: mode)
         startRound()
     }
 
     private func startRound() {
         // Between the A below middle C and the A two octaves above it.
-        targetHz = 220 * pow(4, Double.random(in: 0...1))
+        targetHz = 220 * pow(4, dealer.double(in: 0...1))
         listensLeft = Self.maxListens
         revealed = false
         semitonesOff = 0
         lastPoints = 0
         let answer = Self.slider(forFrequency: targetHz)
-        var start = Double.random(in: 0.1...0.9)
+        var start = dealer.double(in: 0.1...0.9)
         if abs(start - answer) < 0.15 {
             start = answer > 0.5 ? answer - 0.3 : answer + 0.3
         }

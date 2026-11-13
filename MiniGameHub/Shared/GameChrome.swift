@@ -5,6 +5,7 @@ import SwiftUI
 /// saves high scores, so the games never touch storage.
 struct GameChrome<Content: View>: View {
     private let kind: GameKind
+    private let mode: PlayMode
     private let status: String
     private let score: Int
     private let isFinished: Bool
@@ -12,11 +13,13 @@ struct GameChrome<Content: View>: View {
     private let content: () -> Content
 
     @EnvironmentObject private var scores: HighScoreStore
+    @EnvironmentObject private var daily: DailyStore
     @Environment(\.dismiss) private var dismiss
     @State private var isNewBest = false
 
     init(
         kind: GameKind,
+        mode: PlayMode = .free,
         status: String,
         score: Int,
         isFinished: Bool,
@@ -24,6 +27,7 @@ struct GameChrome<Content: View>: View {
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.kind = kind
+        self.mode = mode
         self.status = status
         self.score = score
         self.isFinished = isFinished
@@ -60,6 +64,9 @@ struct GameChrome<Content: View>: View {
         .onChange(of: isFinished) { finished in
             if finished {
                 isNewBest = scores.submit(score, for: kind)
+                if let day = mode.day {
+                    daily.record(score, for: kind.rawValue, day: day)
+                }
                 if isNewBest {
                     Haptics.success()
                 }
@@ -90,7 +97,7 @@ struct GameChrome<Content: View>: View {
                     .foregroundColor(.white)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
-                Text(status)
+                Text(mode.isDaily ? "Daily · \(status)" : status)
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundColor(Theme.textSecondary)
                     .lineLimit(1)
@@ -130,7 +137,7 @@ struct GameChrome<Content: View>: View {
             Color.black.opacity(0.65).ignoresSafeArea()
 
             VStack(spacing: 12) {
-                Text(isNewBest ? "New best!" : "Finished")
+                Text(isNewBest ? "New best!" : (mode.isDaily ? "Today's result" : "Finished"))
                     .font(.system(size: 28, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
 
@@ -146,19 +153,40 @@ struct GameChrome<Content: View>: View {
                     .foregroundColor(Theme.textSecondary)
                     .multilineTextAlignment(.center)
 
-                VStack(spacing: 10) {
-                    Button("Play again") {
-                        isNewBest = false
-                        onRestart()
+                if mode.isDaily {
+                    // One go per day: no "Play again" here.
+                    HStack(spacing: 6) {
+                        Image(systemName: "flame.fill").foregroundColor(Color(hex: 0xFF8A3D))
+                        Text(daily.streak == 1 ? "1 day streak" : "\(daily.streak) day streak")
                     }
-                    .buttonStyle(PrimaryButtonStyle(kind: kind))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+
+                    Text("A new daily puzzle arrives at midnight. Free play is open any time.")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(Theme.textSecondary)
+                        .multilineTextAlignment(.center)
 
                     Button("Back to menu") {
                         dismiss()
                     }
-                    .buttonStyle(SecondaryButtonStyle())
+                    .buttonStyle(PrimaryButtonStyle(kind: kind))
+                    .padding(.top, 8)
+                } else {
+                    VStack(spacing: 10) {
+                        Button("Play again") {
+                            isNewBest = false
+                            onRestart()
+                        }
+                        .buttonStyle(PrimaryButtonStyle(kind: kind))
+
+                        Button("Back to menu") {
+                            dismiss()
+                        }
+                        .buttonStyle(SecondaryButtonStyle())
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.top, 8)
             }
             .padding(24)
             .frame(maxWidth: 300)

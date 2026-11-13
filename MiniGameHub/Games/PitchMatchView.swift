@@ -1,13 +1,20 @@
 import SwiftUI
 
 struct PitchMatchView: View {
-    @StateObject private var game = DemoMode.pitch()
+    @StateObject private var game: PitchGame
+    private let mode: PlayMode
 
     private let kind = GameKind.pitch
+
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: PitchGame(mode: mode))
+    }
 
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "Note \(game.roundIndex + 1) of \(PitchGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,

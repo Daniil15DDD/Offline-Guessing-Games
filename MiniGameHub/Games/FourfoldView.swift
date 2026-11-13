@@ -1,16 +1,23 @@
 import SwiftUI
 
 struct FourfoldView: View {
-    @StateObject private var game = DemoMode.fourfold()
+    @StateObject private var game: FourfoldGame
+    private let mode: PlayMode
 
     private let kind = GameKind.fourfold
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
     /// One colour per group, easiest first.
     private let groupColors = [Color(hex: 0x2BA6A0), Color(hex: 0xE2892F), Color(hex: 0xD9507C), Color(hex: 0x6C63E0)]
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: FourfoldGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "\(game.solvedGroups.count) of 4 groups",
             score: game.score,
             isFinished: game.isFinished,

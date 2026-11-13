@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct BeatKeeperView: View {
-    @StateObject private var game = DemoMode.beat()
+    @StateObject private var game: BeatGame
+    private let mode: PlayMode
     @State private var pulse = false
     @State private var isPressed = false
     /// Changes whenever a scheduled run of beats should be abandoned.
@@ -9,9 +10,15 @@ struct BeatKeeperView: View {
 
     private let kind = GameKind.beat
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: BeatGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "Beat \(game.roundIndex + 1) of \(BeatGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,

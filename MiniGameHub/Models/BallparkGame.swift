@@ -16,11 +16,13 @@ final class BallparkGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private let questions: [BallparkQuestion]
     private var queue: [Int] = []
 
-    init(questions: [BallparkQuestion] = BallparkQuestions.all) {
+    init(mode: PlayMode = .free, questions: [BallparkQuestion] = BallparkQuestions.all) {
         precondition(!questions.isEmpty, "Ballpark needs questions")
+        self.mode = mode
         self.questions = questions
         self.question = questions[0]
         deal()
@@ -36,7 +38,7 @@ final class BallparkGame: ObservableObject {
     }
 
     private func deal() {
-        queue = Deck.draw("ballpark", count: questions.count, take: Self.rounds)
+        queue = Dealer(key: "ballpark", mode: mode).indices(count: questions.count, take: Self.rounds)
         startRound()
     }
 

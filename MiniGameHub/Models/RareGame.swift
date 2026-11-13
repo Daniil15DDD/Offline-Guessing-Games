@@ -19,12 +19,14 @@ final class RareGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private let prompts: [RarePrompt]
     private var queue: [Int] = []
     private var deadline: Date?
 
-    init(prompts: [RarePrompt] = RarePrompts.all) {
+    init(mode: PlayMode = .free, prompts: [RarePrompt] = RarePrompts.all) {
         precondition(!prompts.isEmpty, "Rare Find needs prompts")
+        self.mode = mode
         self.prompts = prompts
         self.prompt = prompts[0]
         deal()
@@ -38,7 +40,7 @@ final class RareGame: ObservableObject {
     }
 
     private func deal() {
-        queue = Deck.draw("rare", count: prompts.count, take: Self.rounds)
+        queue = Dealer(key: "rare", mode: mode).indices(count: prompts.count, take: Self.rounds)
         startRound()
     }
 

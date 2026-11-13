@@ -1,14 +1,21 @@
 import SwiftUI
 
 struct PricePointView: View {
-    @StateObject private var game = DemoMode.price()
+    @StateObject private var game: PriceGame
+    private let mode: PlayMode
     @State private var text = ""
 
     private let kind = GameKind.price
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: PriceGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "Item \(game.roundIndex + 1) of \(PriceGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,

@@ -18,11 +18,13 @@ final class TrendGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private let allSeries: [TrendSeries]
     private var queue: [Int] = []
 
-    init(series: [TrendSeries] = TrendSeriesData.all) {
+    init(mode: PlayMode = .free, series: [TrendSeries] = TrendSeriesData.all) {
         precondition(!series.isEmpty, "Trendline needs charts")
+        self.mode = mode
         self.allSeries = series
         self.series = series[0]
         deal()
@@ -36,7 +38,7 @@ final class TrendGame: ObservableObject {
     }
 
     private func deal() {
-        queue = Deck.draw("trend", count: allSeries.count, take: Self.rounds)
+        queue = Dealer(key: "trend", mode: mode).indices(count: allSeries.count, take: Self.rounds)
         startRound()
     }
 

@@ -16,6 +16,7 @@
 		F0BF2BC99D4E3FF5AB1DDE27 /* ScalePairs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39550FBFEB201784EA71A89 /* ScalePairs.swift */; };
 		45512ADAE9E109F39D97597B /* TopTenLists.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC9A0AC3AB7C6E84A71AA66 /* TopTenLists.swift */; };
 		E6AB4D3B91B9E82F9BED117D /* TrendSeries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACD755093B32D0316FC2DE8 /* TrendSeries.swift */; };
+		BA0127EFBA42802E5E7EE47C /* WordBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1512A00238AF134EDC592471 /* WordBank.swift */; };
 		881826CD5320B1FDE608B17D /* BallparkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6073A57DD433533E6669998 /* BallparkView.swift */; };
 		055447AAA951B30CF509A6C4 /* BeatKeeperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21EC37E9ADE716E410A8953D /* BeatKeeperView.swift */; };
 		B575306746019EB02186696D /* CritterCluesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA7CA9E79B95E8DE5F31F06F /* CritterCluesView.swift */; };
@@ -37,6 +38,7 @@
 		867147359A6AC9F3DA459E31 /* BallparkGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8191A6B446E8EAA8F3891F6C /* BallparkGame.swift */; };
 		46F42FD69D0F2EDA1CEF0DC4 /* BeatGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1700D8E68A09D023DD611CB /* BeatGame.swift */; };
 		3D599BF8B63C55772F141778 /* CritterGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BAE9ACAF16DA866B362FDE /* CritterGame.swift */; };
+		6D511F200B22F799F0C5096D /* DailyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82C51EBBAD95465FA3B95069 /* DailyStore.swift */; };
 		1EAE6EE47A332227892E3521 /* FourfoldGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB82E3A3904B41D43F4B3D43 /* FourfoldGame.swift */; };
 		63E1822E5795EA41224B3D89 /* GlobeGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8EA430F38B9C49C9F42C42 /* GlobeGame.swift */; };
 		E3B6036316E206A2161C9F43 /* HueGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDFEFB4BD3659C1BD1BDF380 /* HueGame.swift */; };
@@ -46,7 +48,6 @@
 		CB92AE8A7147388B64CA6BE7 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E0F5B486E2A0B6F481AE608 /* ScaleGame.swift */; };
 		45D68135A6B87FAADB200F64 /* TopTenGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967752B81825E08991937C05 /* TopTenGame.swift */; };
 		DD97DE3FA5B6C3473D230D34 /* TrendGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1186E9776F8410B8A9F2DC4 /* TrendGame.swift */; };
-		49391FC785F64706386D4C51 /* DemoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */; };
 		2264BD8436DA0BCB3464E358 /* GameChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D31E42E39D9E515B43A4453 /* GameChrome.swift */; };
 		08DD6FAE68BDEEA57649A9E3 /* GameKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C17793C525FD73D3424FBD /* GameKind.swift */; };
 		87ACA04CB9BE49EADC0A2120 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA6F5EB854E2020D108AD4F /* Haptics.swift */; };
@@ -68,6 +69,7 @@
 		D39550FBFEB201784EA71A89 /* ScalePairs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScalePairs.swift; sourceTree = "<group>"; };
 		CCC9A0AC3AB7C6E84A71AA66 /* TopTenLists.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopTenLists.swift; sourceTree = "<group>"; };
 		3ACD755093B32D0316FC2DE8 /* TrendSeries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendSeries.swift; sourceTree = "<group>"; };
+		1512A00238AF134EDC592471 /* WordBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordBank.swift; sourceTree = "<group>"; };
 		E6073A57DD433533E6669998 /* BallparkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallparkView.swift; sourceTree = "<group>"; };
 		21EC37E9ADE716E410A8953D /* BeatKeeperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatKeeperView.swift; sourceTree = "<group>"; };
 		FA7CA9E79B95E8DE5F31F06F /* CritterCluesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CritterCluesView.swift; sourceTree = "<group>"; };
@@ -89,6 +91,7 @@
 		8191A6B446E8EAA8F3891F6C /* BallparkGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BallparkGame.swift; sourceTree = "<group>"; };
 		B1700D8E68A09D023DD611CB /* BeatGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeatGame.swift; sourceTree = "<group>"; };
 		32BAE9ACAF16DA866B362FDE /* CritterGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CritterGame.swift; sourceTree = "<group>"; };
+		82C51EBBAD95465FA3B95069 /* DailyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyStore.swift; sourceTree = "<group>"; };
 		FB82E3A3904B41D43F4B3D43 /* FourfoldGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FourfoldGame.swift; sourceTree = "<group>"; };
 		DD8EA430F38B9C49C9F42C42 /* GlobeGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobeGame.swift; sourceTree = "<group>"; };
 		FDFEFB4BD3659C1BD1BDF380 /* HueGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HueGame.swift; sourceTree = "<group>"; };
@@ -98,7 +101,6 @@
 		1E0F5B486E2A0B6F481AE608 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
 		967752B81825E08991937C05 /* TopTenGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopTenGame.swift; sourceTree = "<group>"; };
 		D1186E9776F8410B8A9F2DC4 /* TrendGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendGame.swift; sourceTree = "<group>"; };
-		5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMode.swift; sourceTree = "<group>"; };
 		3D31E42E39D9E515B43A4453 /* GameChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameChrome.swift; sourceTree = "<group>"; };
 		95C17793C525FD73D3424FBD /* GameKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameKind.swift; sourceTree = "<group>"; };
 		EEA6F5EB854E2020D108AD4F /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
@@ -163,6 +165,7 @@
 				D39550FBFEB201784EA71A89 /* ScalePairs.swift */,
 				CCC9A0AC3AB7C6E84A71AA66 /* TopTenLists.swift */,
 				3ACD755093B32D0316FC2DE8 /* TrendSeries.swift */,
+				1512A00238AF134EDC592471 /* WordBank.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -212,6 +215,7 @@
 				8191A6B446E8EAA8F3891F6C /* BallparkGame.swift */,
 				B1700D8E68A09D023DD611CB /* BeatGame.swift */,
 				32BAE9ACAF16DA866B362FDE /* CritterGame.swift */,
+				82C51EBBAD95465FA3B95069 /* DailyStore.swift */,
 				FB82E3A3904B41D43F4B3D43 /* FourfoldGame.swift */,
 				DD8EA430F38B9C49C9F42C42 /* GlobeGame.swift */,
 				FDFEFB4BD3659C1BD1BDF380 /* HueGame.swift */,
@@ -228,7 +232,6 @@
 		8836D1940D6E7D2B5DC2AEA3 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */,
 				3D31E42E39D9E515B43A4453 /* GameChrome.swift */,
 				95C17793C525FD73D3424FBD /* GameKind.swift */,
 				EEA6F5EB854E2020D108AD4F /* Haptics.swift */,
@@ -317,6 +320,7 @@
 				F0BF2BC99D4E3FF5AB1DDE27 /* ScalePairs.swift in Sources */,
 				45512ADAE9E109F39D97597B /* TopTenLists.swift in Sources */,
 				E6AB4D3B91B9E82F9BED117D /* TrendSeries.swift in Sources */,
+				BA0127EFBA42802E5E7EE47C /* WordBank.swift in Sources */,
 				881826CD5320B1FDE608B17D /* BallparkView.swift in Sources */,
 				055447AAA951B30CF509A6C4 /* BeatKeeperView.swift in Sources */,
 				B575306746019EB02186696D /* CritterCluesView.swift in Sources */,
@@ -338,6 +342,7 @@
 				867147359A6AC9F3DA459E31 /* BallparkGame.swift in Sources */,
 				46F42FD69D0F2EDA1CEF0DC4 /* BeatGame.swift in Sources */,
 				3D599BF8B63C55772F141778 /* CritterGame.swift in Sources */,
+				6D511F200B22F799F0C5096D /* DailyStore.swift in Sources */,
 				1EAE6EE47A332227892E3521 /* FourfoldGame.swift in Sources */,
 				63E1822E5795EA41224B3D89 /* GlobeGame.swift in Sources */,
 				E3B6036316E206A2161C9F43 /* HueGame.swift in Sources */,
@@ -347,7 +352,6 @@
 				CB92AE8A7147388B64CA6BE7 /* ScaleGame.swift in Sources */,
 				45D68135A6B87FAADB200F64 /* TopTenGame.swift in Sources */,
 				DD97DE3FA5B6C3473D230D34 /* TrendGame.swift in Sources */,
-				49391FC785F64706386D4C51 /* DemoMode.swift in Sources */,
 				2264BD8436DA0BCB3464E358 /* GameChrome.swift in Sources */,
 				08DD6FAE68BDEEA57649A9E3 /* GameKind.swift in Sources */,
 				87ACA04CB9BE49EADC0A2120 /* Haptics.swift in Sources */,

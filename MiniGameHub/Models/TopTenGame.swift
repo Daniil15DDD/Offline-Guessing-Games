@@ -22,10 +22,12 @@ final class TopTenGame: ObservableObject {
     @Published private(set) var isOver = false
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private let lists: [TopTenList]
 
-    init(lists: [TopTenList] = TopTenLists.all) {
+    init(mode: PlayMode = .free, lists: [TopTenList] = TopTenLists.all) {
         precondition(!lists.isEmpty, "Ten Count needs lists")
+        self.mode = mode
         self.lists = lists
         self.list = lists[0]
         deal()
@@ -39,7 +41,7 @@ final class TopTenGame: ObservableObject {
     }
 
     private func deal() {
-        list = lists[Deck.next("topten", count: lists.count)]
+        list = lists[Dealer(key: "topten", mode: mode).index(count: lists.count)]
         found = []
         wrongGuesses = []
         message = ""

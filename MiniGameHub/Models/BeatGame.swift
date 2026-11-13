@@ -28,7 +28,12 @@ final class BeatGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
-    init() {
+    let mode: PlayMode
+    private var dealer: Dealer
+
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        self.dealer = Dealer(key: "beat", mode: mode)
         startRound()
     }
 
@@ -39,11 +44,12 @@ final class BeatGame: ObservableObject {
         score = 0
         roundIndex = 0
         isFinished = false
+        dealer = Dealer(key: "beat", mode: mode)
         startRound()
     }
 
     private func startRound() {
-        targetBPM = Double(Int.random(in: 60...160))
+        targetBPM = Double(dealer.int(in: 60...160))
         phase = .ready
         beatsPlayed = 0
         taps = []

@@ -1,10 +1,11 @@
 import SwiftUI
 
 struct DeepCatchView: View {
-    @StateObject private var game = DemoMode.rare()
+    @StateObject private var game: RareGame
+    private let mode: PlayMode
     @State private var text = ""
     /// The clock only runs once the player has pressed Start.
-    @State private var started = DemoMode.isOn
+    @State private var started = false
 
     private let kind = GameKind.deep
     private let clock = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
@@ -15,9 +16,15 @@ struct DeepCatchView: View {
 
     private var depth: Int { game.score * Self.metresPerPoint }
 
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        _game = StateObject(wrappedValue: RareGame(mode: mode))
+    }
+
     var body: some View {
         GameChrome(
             kind: kind,
+            mode: mode,
             status: "Depth \(NumberText.grouped(Double(depth))) m",
             score: game.score,
             isFinished: game.isFinished,

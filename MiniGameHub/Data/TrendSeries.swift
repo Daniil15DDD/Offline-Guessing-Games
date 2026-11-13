@@ -99,6 +99,30 @@ enum TrendSeriesData {
             years: [1950, 1955, 1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010, 2015, 2020],
             values: [0.75, 0.75, 1.00, 1.25, 1.60, 2.10, 3.10, 3.35, 3.80, 4.25, 5.15, 5.15, 7.25, 7.25, 7.25],
             shown: 7, axisMin: 0, axisMax: 12
+        ),
+        TrendSeries(
+            title: "Number of US states",
+            unit: "states",
+            source: "States in the Union at the end of each year",
+            years: [1790, 1800, 1810, 1820, 1830, 1840, 1850, 1860, 1870, 1880, 1890, 1900, 1910, 1920, 1930, 1940, 1950, 1960],
+            values: [13, 16, 17, 23, 24, 26, 31, 33, 37, 38, 44, 45, 46, 48, 48, 48, 48, 50],
+            shown: 8, axisMin: 0, axisMax: 80
+        ),
+        TrendSeries(
+            title: "Men's mile world record",
+            unit: "seconds",
+            source: "Official record standing at the end of each year",
+            years: [1955, 1960, 1965, 1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 2010],
+            values: [238.0, 234.5, 233.6, 231.1, 229.4, 228.8, 226.3, 226.3, 224.4, 223.1, 223.1, 223.1],
+            shown: 5, axisMin: 205, axisMax: 245
+        ),
+        TrendSeries(
+            title: "Height of the world's tallest building",
+            unit: "metres",
+            source: "Tallest completed building in each year",
+            years: [1935, 1945, 1955, 1965, 1975, 1985, 1995, 2005, 2015],
+            values: [381, 381, 381, 381, 442, 442, 442, 508, 828],
+            shown: 5, axisMin: 0, axisMax: 1200
         )
     ]
 }

@@ -16,11 +16,15 @@ final class ScaleGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private let pairs: [ScalePair]
     private var queue: [Int] = []
+    private var dealer: Dealer
 
-    init(pairs: [ScalePair] = ScalePairs.all) {
+    init(mode: PlayMode = .free, pairs: [ScalePair] = ScalePairs.all) {
         precondition(!pairs.isEmpty, "Scale It needs pairs")
+        self.mode = mode
+        self.dealer = Dealer(key: "scale", mode: mode)
         self.pairs = pairs
         self.pair = pairs[0]
         deal()
@@ -57,7 +61,8 @@ final class ScaleGame: ObservableObject {
     }
 
     private func deal() {
-        queue = Deck.draw("scale", count: pairs.count, take: Self.rounds)
+        dealer = Dealer(key: "scale", mode: mode)
+        queue = dealer.indices(count: pairs.count, take: Self.rounds)
         startRound()
     }
 
@@ -67,7 +72,7 @@ final class ScaleGame: ObservableObject {
         lastPoints = 0
         // Start somewhere that is clearly not the answer.
         let answer = Self.slider(forRatio: pair.ratio)
-        var start = Double.random(in: 0.15...0.85)
+        var start = dealer.double(in: 0.15...0.85)
         if abs(start - answer) < 0.12 {
             start = answer > 0.5 ? answer - 0.25 : answer + 0.25
         }

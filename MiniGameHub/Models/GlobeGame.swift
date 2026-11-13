@@ -17,7 +17,7 @@ final class GlobeGame: ObservableObject {
 
     static let maxScore = 100
     /// Anything this far away or further is fully cold.
-    static let coldDistanceKm = 6000.0
+    static let coldDistanceKm = 9000.0
 
     @Published private(set) var target: Country
     /// In the order they were made.
@@ -27,10 +27,12 @@ final class GlobeGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private let countries: [Country]
 
-    init(countries: [Country] = Atlas.countries) {
+    init(mode: PlayMode = .free, countries: [Country] = Atlas.countries) {
         precondition(!countries.isEmpty, "The globe game needs country data")
+        self.mode = mode
         self.countries = countries
         self.target = countries[0]
         deal()
@@ -41,7 +43,7 @@ final class GlobeGame: ObservableObject {
     }
 
     private func deal() {
-        target = countries[Deck.next("globe", count: countries.count)]
+        target = countries[Dealer(key: "globe", mode: mode).index(count: countries.count)]
         guesses = []
         solved = false
         isOver = false
@@ -49,10 +51,11 @@ final class GlobeGame: ObservableObject {
         isFinished = false
     }
 
-    /// Nearest first.
+    /// Warmest first. The answer itself always leads.
     var ranked: [Guess] {
         guesses.sorted { first, second in
-            first.distanceKm == second.distanceKm ? first.id < second.id : first.distanceKm < second.distanceKm
+            if first.isCorrect != second.isCorrect { return first.isCorrect }
+            return first.distanceKm == second.distanceKm ? first.id < second.id : first.distanceKm < second.distanceKm
         }
     }
 
@@ -60,8 +63,9 @@ final class GlobeGame: ObservableObject {
 
     static func heat(forDistanceKm km: Double) -> Double {
         let share = min(1, max(0, km / coldDistanceKm))
-        // Ease out so the last few hundred kilometres change colour fastest.
-        return (1 - share) * (1 - share)
+        // Curved so nearby countries change colour fastest, while far ones
+        // still look different from each other.
+        return pow(1 - share, 1.5)
     }
 
     /// 100 for a first-try win, 4 less for each extra guess, never under 10.

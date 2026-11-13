@@ -5,11 +5,13 @@ import UIKit
 struct MiniGameHubApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var scores = HighScoreStore()
+    @StateObject private var daily = DailyStore()
 
     var body: some Scene {
         WindowGroup {
             HubView()
                 .environmentObject(scores)
+                .environmentObject(daily)
                 .preferredColorScheme(.dark)
         }
     }

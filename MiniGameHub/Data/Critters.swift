@@ -88,6 +88,15 @@ enum Critters {
         ("Monarch butterfly", "Invertebrate", "Herbivore", "Land", 6, "North America", 0.0005, "a_butterfly"),
         ("Goliath birdeater spider", "Invertebrate", "Carnivore", "Land", 8, "South America", 0.15, "a_spider"),
         ("Emperor scorpion", "Invertebrate", "Carnivore", "Land", 8, "Africa", 0.03, "a_scorpion"),
-        ("Garden snail", "Invertebrate", "Herbivore", "Land", 0, "Europe", 0.01, "a_snail")
+        ("Garden snail", "Invertebrate", "Herbivore", "Land", 0, "Europe", 0.01, "a_snail"),
+        ("Eastern chipmunk", "Mammal", "Omnivore", "Land", 4, "North America", 0.1, "a_chipmunk"),
+        ("Rhesus macaque", "Mammal", "Omnivore", "Land", 2, "Asia", 8, "a_monkey"),
+        ("Przewalski's horse", "Mammal", "Herbivore", "Land", 4, "Asia", 300, "a_horse"),
+        ("Mountain goat", "Mammal", "Herbivore", "Land", 4, "North America", 80, "a_goat"),
+        ("Bactrian camel", "Mammal", "Herbivore", "Land", 4, "Asia", 600, "a_camel2"),
+        ("Red junglefowl", "Bird", "Omnivore", "Land", 2, "Asia", 1, "a_rooster"),
+        ("Rock dove", "Bird", "Herbivore", "Land", 2, "Europe, Africa, Asia", 0.35, "a_dove"),
+        ("Blue crab", "Invertebrate", "Omnivore", "Water", 10, "Oceans", 0.3, "a_crab"),
+        ("Seven-spot ladybird", "Invertebrate", "Carnivore", "Land", 6, "Europe, Asia", 0.00002, "a_ladybird")
     ]
 }

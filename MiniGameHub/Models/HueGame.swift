@@ -58,9 +58,13 @@ final class HueGame: ObservableObject {
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
 
+    let mode: PlayMode
     private var hideAt: Date?
+    private var dealer: Dealer
 
-    init() {
+    init(mode: PlayMode = .free) {
+        self.mode = mode
+        self.dealer = Dealer(key: "hue", mode: mode)
         startRound()
     }
 
@@ -68,14 +72,15 @@ final class HueGame: ObservableObject {
         score = 0
         roundIndex = 0
         isFinished = false
+        dealer = Dealer(key: "hue", mode: mode)
         startRound()
     }
 
     private func startRound() {
         target = HSB(
-            hue: Double.random(in: 0..<1),
-            saturation: Double.random(in: 0.35...1),
-            brightness: Double.random(in: 0.45...1)
+            hue: dealer.double(in: 0...0.999),
+            saturation: dealer.double(in: 0.35...1),
+            brightness: dealer.double(in: 0.45...1)
         )
         guess = HSB(hue: 0.5, saturation: 0.5, brightness: 0.5)
         phase = .memorize

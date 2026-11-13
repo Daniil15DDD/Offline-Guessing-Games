@@ -1,0 +1,13 @@
+{
+  "images": [
+    {
+      "filename": "p_telescope.png",
+      "idiom": "universal",
+      "scale": "2x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}
