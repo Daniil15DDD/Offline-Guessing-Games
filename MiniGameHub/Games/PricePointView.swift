@@ -82,9 +82,9 @@ struct PricePointView: View {
         game.guess(amount)
         text = ""
         if game.solved {
-            Haptics.success()
+            Feedback.success()
         } else {
-            Haptics.tap()
+            Feedback.tap()
         }
     }
 

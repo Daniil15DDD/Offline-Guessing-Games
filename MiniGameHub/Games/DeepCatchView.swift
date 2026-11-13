@@ -156,9 +156,9 @@ struct DeepCatchView: View {
     private func submit() {
         guard !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         if game.submit(text) {
-            Haptics.success()
+            Feedback.success()
         } else {
-            Haptics.failure()
+            Feedback.failure()
         }
         text = ""
     }

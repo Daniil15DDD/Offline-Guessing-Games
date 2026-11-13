@@ -6,6 +6,8 @@ import Combine
 final class RareGame: ObservableObject {
     static let rounds = 7
     static let secondsPerPrompt = 25.0
+    /// A wrong answer does not end the round. It costs this many seconds.
+    static let missPenalty = 2.0
     static let maxScore = rounds * 100
 
     @Published private(set) var prompt: RarePrompt
@@ -58,7 +60,7 @@ final class RareGame: ObservableObject {
     func tick(now: Date = Date()) {
         guard !roundOver, !isFinished else { return }
         guard let deadline = deadline else {
-            self.deadline = now.addingTimeInterval(Self.secondsPerPrompt)
+            self.deadline = now.addingTimeInterval(timeLeft)
             return
         }
         let left = max(0, deadline.timeIntervalSince(now))
@@ -85,6 +87,14 @@ final class RareGame: ObservableObject {
         }
         if !rejected.contains(where: { TextMatch.normalize($0) == typed }) {
             rejected.append(text.trimmingCharacters(in: .whitespacesAndNewlines))
+            // Take the penalty off the clock. Repeating a miss is free.
+            if let deadline = deadline {
+                self.deadline = deadline.addingTimeInterval(-Self.missPenalty)
+            }
+            timeLeft = max(0, timeLeft - Self.missPenalty)
+            if timeLeft <= 0 {
+                roundOver = true
+            }
         }
         return false
     }

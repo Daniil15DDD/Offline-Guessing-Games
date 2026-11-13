@@ -14,6 +14,8 @@ final class FourfoldGame: ObservableObject {
     @Published private(set) var solvedGroups: [Int] = []
     @Published private(set) var foundByPlayer = 0
     @Published private(set) var mistakes = 0
+    /// Every submitted guess, as the group each of its four words belongs to.
+    @Published private(set) var history: [[Int]] = []
     @Published private(set) var message = ""
     /// The board is complete (won or out of mistakes).
     @Published private(set) var isOver = false
@@ -41,6 +43,7 @@ final class FourfoldGame: ObservableObject {
         solvedGroups = []
         foundByPlayer = 0
         mistakes = 0
+        history = []
         message = ""
         isOver = false
         score = 0
@@ -76,6 +79,9 @@ final class FourfoldGame: ObservableObject {
             return
         }
         tried.insert(key)
+        history.append(selected.map { word in
+            puzzle.groups.firstIndex { $0.words.contains(word) } ?? 0
+        })
 
         // How many of the four picks sit in each group.
         var best = 0

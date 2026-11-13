@@ -92,9 +92,9 @@ struct HueRecallView: View {
             Button("Lock in") {
                 game.lockIn()
                 if game.lastPoints >= 70 {
-                    Haptics.success()
+                    Feedback.success()
                 } else {
-                    Haptics.bump()
+                    Feedback.bump()
                 }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))

@@ -18,6 +18,8 @@ final class TonePlayer {
     private var phase = 0.0
 
     private var stopWork: DispatchWorkItem?
+    /// Goes up whenever a new sound starts, so an older run of notes gives way.
+    private var sequence = 0
 
     private init() {}
 
@@ -27,6 +29,7 @@ final class TonePlayer {
         self.frequency = frequency
         targetVolume = 0.25
         stopWork?.cancel()
+        sequence += 1
         let work = DispatchWorkItem { [weak self] in
             self?.targetVolume = 0
         }
@@ -34,8 +37,32 @@ final class TonePlayer {
         DispatchQueue.main.asyncAfter(deadline: .now() + duration, execute: work)
     }
 
+    /// Plays several short notes one after another (for sound effects).
+    func play(notes: [(frequency: Double, duration: Double)]) {
+        guard !notes.isEmpty, prepare() else { return }
+        stopWork?.cancel()
+        sequence += 1
+        let current = sequence
+        var offset = 0.0
+        for note in notes {
+            DispatchQueue.main.asyncAfter(deadline: .now() + offset) { [weak self] in
+                guard let self = self, self.sequence == current else { return }
+                self.frequency = note.frequency
+                self.targetVolume = 0.2
+            }
+            offset += note.duration
+        }
+        let work = DispatchWorkItem { [weak self] in
+            guard let self = self, self.sequence == current else { return }
+            self.targetVolume = 0
+        }
+        stopWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + offset, execute: work)
+    }
+
     func stop() {
         stopWork?.cancel()
+        sequence += 1
         targetVolume = 0
     }
 

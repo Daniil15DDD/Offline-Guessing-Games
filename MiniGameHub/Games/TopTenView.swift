@@ -123,10 +123,10 @@ struct TopTenView: View {
         let outcome = game.submit(text)
         switch outcome {
         case .correct:
-            Haptics.success()
+            Feedback.success()
             text = ""
         case .wrong:
-            Haptics.failure()
+            Feedback.failure()
             text = ""
         case .alreadyFound, .alreadyTried:
             text = ""

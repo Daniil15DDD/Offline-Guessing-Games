@@ -13,6 +13,8 @@ struct HubView: View {
     @EnvironmentObject private var daily: DailyStore
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(Haptics.enabledKey) private var hapticsEnabled = true
+    @AppStorage(Sound.enabledKey) private var soundEnabled = true
+    @State private var showStats = false
     @AppStorage("hub.showDaily") private var showDaily = true
     @State private var path: [GameRoute] = []
     @State private var confirmReset = false
@@ -86,6 +88,9 @@ struct HubView: View {
         }
         .tint(.white)
         .onAppear(perform: openRequestedGame)
+        .sheet(isPresented: $showStats) {
+            StatsSheet()
+        }
         .onChange(of: scenePhase) { phase in
             // Midnight may have passed while the app was in the background.
             if phase == .active {
@@ -93,7 +98,7 @@ struct HubView: View {
             }
         }
         .confirmationDialog(
-            "Reset all high scores?",
+            "Reset all scores and stats?",
             isPresented: $confirmReset,
             titleVisibility: .visible
         ) {
@@ -183,6 +188,37 @@ struct HubView: View {
 
     private var settings: some View {
         VStack(spacing: 0) {
+            Button {
+                showStats = true
+            } label: {
+                HStack {
+                    Label("Your stats", systemImage: "chart.bar.fill")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(Theme.textSecondary)
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Divider().background(Color.white.opacity(0.08))
+
+            Toggle(isOn: $soundEnabled) {
+                Label("Sound effects", systemImage: "speaker.wave.2.fill")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white)
+            }
+            .tint(Color(hex: 0x6C7BFF))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider().background(Color.white.opacity(0.08))
+
             Toggle(isOn: $hapticsEnabled) {
                 Label("Haptics", systemImage: "iphone.radiowaves.left.and.right")
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
@@ -198,7 +234,7 @@ struct HubView: View {
                 confirmReset = true
             } label: {
                 HStack {
-                    Label("Reset high scores", systemImage: "arrow.counterclockwise")
+                    Label("Reset scores and stats", systemImage: "arrow.counterclockwise")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                     Spacer()
                 }
@@ -309,5 +345,94 @@ private struct TileButtonStyle: ButtonStyle {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.96 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+/// Best score, plays and average for every game.
+private struct StatsSheet: View {
+    @EnvironmentObject private var scores: HighScoreStore
+    @EnvironmentObject private var daily: DailyStore
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Text("Your stats")
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .foregroundColor(.white)
+                    Spacer()
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .heavy))
+                            .foregroundColor(.white)
+                            .frame(width: 34, height: 34)
+                            .background(Circle().fill(Theme.surfaceRaised))
+                    }
+                    .accessibilityLabel("Close")
+                }
+
+                HStack(spacing: 10) {
+                    summary("\(scores.totalPlays)", "games played")
+                    summary("\(daily.streak)", "day streak")
+                    summary("\(daily.finishedCount)", "dailies today")
+                }
+
+                ForEach(GameKind.allCases) { kind in
+                    HStack(spacing: 12) {
+                        Image(kind.art)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 40, height: 40)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(kind.title)
+                                .font(.system(size: 16, weight: .heavy, design: .rounded))
+                                .foregroundColor(.white)
+                            Text(detail(for: kind)).caption()
+                        }
+                        Spacer(minLength: 4)
+                        VStack(alignment: .trailing, spacing: 1) {
+                            Text("\(scores.best(for: kind))")
+                                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundStyle(kind.gradient)
+                            Text("best of \(kind.maxScore)")
+                                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                                .foregroundColor(Theme.textSecondary)
+                        }
+                    }
+                    .padding(12)
+                    .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.surfaceRaised))
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .padding(20)
+        }
+        .background(Theme.surface.ignoresSafeArea())
+    }
+
+    private func detail(for kind: GameKind) -> String {
+        let plays = scores.playCount(for: kind)
+        guard plays > 0, let average = scores.average(for: kind) else {
+            return "Not played yet"
+        }
+        return plays == 1 ? "1 game, scored \(average)" : "\(plays) games, average \(average)"
+    }
+
+    private func summary(_ value: String, _ label: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: 24, weight: .heavy, design: .rounded))
+                .monospacedDigit()
+                .foregroundColor(.white)
+            Text(label)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundColor(Theme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.surfaceRaised))
     }
 }

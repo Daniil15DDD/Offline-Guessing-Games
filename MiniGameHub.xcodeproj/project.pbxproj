@@ -31,6 +31,7 @@
 		7F9FEA1AF7AD5EB7932D8254 /* TrendlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020CE8C6EE214D1A95BAC64B /* TrendlineView.swift */; };
 		9E46FAC309FD2F8A835BE2B2 /* HubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A89D8C2BFC61B8AADE38866 /* HubView.swift */; };
 		6168535DF40BA3AA319576B4 /* Atlas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4652CBD4C3B180E0680887DB /* Atlas.swift */; };
+		E323D17C65CDCDB61C4E2F5A /* Calculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39171BCA62522211BC792079 /* Calculator.swift */; };
 		C43BB917D91EFAA45CB4D9D5 /* Deck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28C05B24B9F7C0EEA8E7E1B8 /* Deck.swift */; };
 		3987D06915939AC9A447932F /* Geo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0768D14674541D098016A1E /* Geo.swift */; };
 		D03E89A5DC3A3FCC5DBA3423 /* Scoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D30A66072A3D401119A373 /* Scoring.swift */; };
@@ -48,6 +49,8 @@
 		CB92AE8A7147388B64CA6BE7 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E0F5B486E2A0B6F481AE608 /* ScaleGame.swift */; };
 		45D68135A6B87FAADB200F64 /* TopTenGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967752B81825E08991937C05 /* TopTenGame.swift */; };
 		DD97DE3FA5B6C3473D230D34 /* TrendGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1186E9776F8410B8A9F2DC4 /* TrendGame.swift */; };
+		1DEEC210A40D9FE2423678A2 /* Effects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FCED270739C05EBFEE0E5A6 /* Effects.swift */; };
+		4B838BC14AC99F858EC04FED /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00AC265B1856CC463885622D /* Feedback.swift */; };
 		2264BD8436DA0BCB3464E358 /* GameChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D31E42E39D9E515B43A4453 /* GameChrome.swift */; };
 		08DD6FAE68BDEEA57649A9E3 /* GameKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C17793C525FD73D3424FBD /* GameKind.swift */; };
 		87ACA04CB9BE49EADC0A2120 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA6F5EB854E2020D108AD4F /* Haptics.swift */; };
@@ -84,6 +87,7 @@
 		020CE8C6EE214D1A95BAC64B /* TrendlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendlineView.swift; sourceTree = "<group>"; };
 		9A89D8C2BFC61B8AADE38866 /* HubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubView.swift; sourceTree = "<group>"; };
 		4652CBD4C3B180E0680887DB /* Atlas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Atlas.swift; sourceTree = "<group>"; };
+		39171BCA62522211BC792079 /* Calculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Calculator.swift; sourceTree = "<group>"; };
 		28C05B24B9F7C0EEA8E7E1B8 /* Deck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deck.swift; sourceTree = "<group>"; };
 		B0768D14674541D098016A1E /* Geo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geo.swift; sourceTree = "<group>"; };
 		11D30A66072A3D401119A373 /* Scoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scoring.swift; sourceTree = "<group>"; };
@@ -101,6 +105,8 @@
 		1E0F5B486E2A0B6F481AE608 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
 		967752B81825E08991937C05 /* TopTenGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopTenGame.swift; sourceTree = "<group>"; };
 		D1186E9776F8410B8A9F2DC4 /* TrendGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendGame.swift; sourceTree = "<group>"; };
+		2FCED270739C05EBFEE0E5A6 /* Effects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Effects.swift; sourceTree = "<group>"; };
+		00AC265B1856CC463885622D /* Feedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
 		3D31E42E39D9E515B43A4453 /* GameChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameChrome.swift; sourceTree = "<group>"; };
 		95C17793C525FD73D3424FBD /* GameKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameKind.swift; sourceTree = "<group>"; };
 		EEA6F5EB854E2020D108AD4F /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
@@ -201,6 +207,7 @@
 			isa = PBXGroup;
 			children = (
 				4652CBD4C3B180E0680887DB /* Atlas.swift */,
+				39171BCA62522211BC792079 /* Calculator.swift */,
 				28C05B24B9F7C0EEA8E7E1B8 /* Deck.swift */,
 				B0768D14674541D098016A1E /* Geo.swift */,
 				11D30A66072A3D401119A373 /* Scoring.swift */,
@@ -232,6 +239,8 @@
 		8836D1940D6E7D2B5DC2AEA3 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				2FCED270739C05EBFEE0E5A6 /* Effects.swift */,
+				00AC265B1856CC463885622D /* Feedback.swift */,
 				3D31E42E39D9E515B43A4453 /* GameChrome.swift */,
 				95C17793C525FD73D3424FBD /* GameKind.swift */,
 				EEA6F5EB854E2020D108AD4F /* Haptics.swift */,
@@ -335,6 +344,7 @@
 				7F9FEA1AF7AD5EB7932D8254 /* TrendlineView.swift in Sources */,
 				9E46FAC309FD2F8A835BE2B2 /* HubView.swift in Sources */,
 				6168535DF40BA3AA319576B4 /* Atlas.swift in Sources */,
+				E323D17C65CDCDB61C4E2F5A /* Calculator.swift in Sources */,
 				C43BB917D91EFAA45CB4D9D5 /* Deck.swift in Sources */,
 				3987D06915939AC9A447932F /* Geo.swift in Sources */,
 				D03E89A5DC3A3FCC5DBA3423 /* Scoring.swift in Sources */,
@@ -352,6 +362,8 @@
 				CB92AE8A7147388B64CA6BE7 /* ScaleGame.swift in Sources */,
 				45D68135A6B87FAADB200F64 /* TopTenGame.swift in Sources */,
 				DD97DE3FA5B6C3473D230D34 /* TrendGame.swift in Sources */,
+				1DEEC210A40D9FE2423678A2 /* Effects.swift in Sources */,
+				4B838BC14AC99F858EC04FED /* Feedback.swift in Sources */,
 				2264BD8436DA0BCB3464E358 /* GameChrome.swift in Sources */,
 				08DD6FAE68BDEEA57649A9E3 /* GameKind.swift in Sources */,
 				87ACA04CB9BE49EADC0A2120 /* Haptics.swift in Sources */,

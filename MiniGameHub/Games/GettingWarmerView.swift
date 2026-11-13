@@ -8,6 +8,7 @@ struct GettingWarmerView: View {
     @State private var longitude = 10.0
     /// Where the globe was pointing when the current drag began.
     @State private var dragStart: (latitude: Double, longitude: Double)?
+    @State private var zoom = 1.0
 
     private let kind = GameKind.globe
 
@@ -60,22 +61,53 @@ struct GettingWarmerView: View {
     }
 
     private var globe: some View {
-        GlobeCanvas(latitude: latitude, longitude: longitude, fills: fills)
+        GlobeCanvas(latitude: latitude, longitude: longitude, zoom: zoom, fills: fills)
             .frame(height: 310)
-            .contentShape(Circle())
+            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .contentShape(Rectangle())
+            .overlay(alignment: .bottomTrailing) {
+                VStack(spacing: 6) {
+                    zoomButton("plus", enabled: zoom < 3.9) {
+                        zoom = min(4, zoom * 1.6)
+                    }
+                    zoomButton("minus", enabled: zoom > 1.01) {
+                        zoom = max(1, zoom / 1.6)
+                    }
+                }
+                .padding(8)
+            }
             .gesture(
                 DragGesture(minimumDistance: 2)
                     .onChanged { drag in
                         let start = dragStart ?? (latitude, longitude)
                         dragStart = start
-                        longitude = start.longitude - Double(drag.translation.width) * 0.45
-                        latitude = min(80, max(-80, start.latitude + Double(drag.translation.height) * 0.45))
+                        // Zoomed in, the same drag turns the globe less.
+                        let sensitivity = 0.45 / zoom
+                        longitude = start.longitude - Double(drag.translation.width) * sensitivity
+                        latitude = min(80, max(-80, start.latitude + Double(drag.translation.height) * sensitivity))
                     }
                     .onEnded { _ in
                         dragStart = nil
                     }
             )
             .accessibilityLabel("Globe. Guessed countries are coloured by how close they are.")
+    }
+
+    private func zoomButton(_ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                action()
+            }
+        } label: {
+            Image(systemName: symbol)
+                .font(.system(size: 15, weight: .heavy))
+                .foregroundColor(.white)
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(Color.black.opacity(0.5)))
+        }
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.4)
+        .accessibilityLabel(symbol == "plus" ? "Zoom in" : "Zoom out")
     }
 
     /// Spins the globe so a country faces the viewer, the short way round.
@@ -154,9 +186,9 @@ struct GettingWarmerView: View {
         text = ""
         face(country)
         if game.solved {
-            Haptics.success()
+            Feedback.success()
         } else {
-            Haptics.tap()
+            Feedback.tap()
         }
     }
 }
@@ -233,14 +265,17 @@ private struct GuessRow: View {
 struct GlobeCanvas: View, Animatable {
     var latitude: Double
     var longitude: Double
+    /// 1 shows the whole globe. Bigger numbers move in closer.
+    var zoom: Double = 1
     /// Country id to fill colour, for the countries that have been guessed.
     let fills: [Int: Color]
 
-    var animatableData: AnimatablePair<Double, Double> {
-        get { AnimatablePair(latitude, longitude) }
+    var animatableData: AnimatablePair<AnimatablePair<Double, Double>, Double> {
+        get { AnimatablePair(AnimatablePair(latitude, longitude), zoom) }
         set {
-            latitude = newValue.first
-            longitude = newValue.second
+            latitude = newValue.first.first
+            longitude = newValue.first.second
+            zoom = newValue.second
         }
     }
 
@@ -249,7 +284,7 @@ struct GlobeCanvas: View, Animatable {
 
     var body: some View {
         Canvas { context, size in
-            let radius = max(min(size.width, size.height) / 2 - 10, 10)
+            let radius = max(min(size.width, size.height) / 2 - 10, 10) * zoom
             let centre = CGPoint(x: size.width / 2, y: size.height / 2)
             let disc = CGRect(x: centre.x - radius, y: centre.y - radius, width: radius * 2, height: radius * 2)
 
@@ -309,6 +344,13 @@ struct GlobeCanvas: View, Animatable {
             for (shape, colour) in coloured {
                 context.fill(shape, with: .color(colour))
                 context.stroke(shape, with: .color(.white.opacity(0.85)), lineWidth: 1)
+                // A guessed country too small to see gets a dot in its colour.
+                let box = shape.boundingRect
+                if max(box.width, box.height) < 12 {
+                    let dot = CGRect(x: box.midX - 6, y: box.midY - 6, width: 12, height: 12)
+                    context.fill(Path(ellipseIn: dot), with: .color(colour))
+                    context.stroke(Path(ellipseIn: dot), with: .color(.white), lineWidth: 1.5)
+                }
             }
 
             // Shading at the rim so it reads as a ball.

@@ -16,6 +16,7 @@ struct GameChrome<Content: View>: View {
     @EnvironmentObject private var daily: DailyStore
     @Environment(\.dismiss) private var dismiss
     @State private var isNewBest = false
+    @State private var showRules = false
 
     init(
         kind: GameKind,
@@ -63,12 +64,12 @@ struct GameChrome<Content: View>: View {
         .toolbar(.hidden, for: .navigationBar)
         .onChange(of: isFinished) { finished in
             if finished {
-                isNewBest = scores.submit(score, for: kind)
+                isNewBest = scores.finishRun(score, for: kind)
                 if let day = mode.day {
                     daily.record(score, for: kind.rawValue, day: day)
                 }
-                if isNewBest {
-                    Haptics.success()
+                if isNewBest || StarRating.stars(for: fraction) >= 2 {
+                    Feedback.win()
                 }
             }
         }
@@ -76,6 +77,27 @@ struct GameChrome<Content: View>: View {
             // Leaving part-way through still banks what was earned.
             scores.submit(score, for: kind)
         }
+        .sheet(isPresented: $showRules) {
+            RulesSheet(kind: kind)
+        }
+    }
+
+    /// Score as a share of the best possible score.
+    private var fraction: Double {
+        kind.maxScore > 0 ? Double(score) / Double(kind.maxScore) : 0
+    }
+
+    /// Plain text for the share button.
+    private var shareText: String {
+        var lines = ["Guessing Games"]
+        if let day = mode.day {
+            lines.append("\(kind.title), daily puzzle \(day + 1)")
+        } else {
+            lines.append(kind.title)
+        }
+        let stars = StarRating.stars(for: fraction)
+        lines.append("\(score) of \(kind.maxScore) points, \(stars) of 3 stars")
+        return lines.joined(separator: "\n")
     }
 
     private var bar: some View {
@@ -106,6 +128,17 @@ struct GameChrome<Content: View>: View {
 
             Spacer(minLength: 4)
 
+            Button {
+                showRules = true
+            } label: {
+                Image(systemName: "questionmark")
+                    .font(.system(size: 14, weight: .heavy))
+                    .foregroundColor(.white)
+                    .frame(width: 34, height: 34)
+                    .background(Circle().fill(Theme.surface))
+            }
+            .accessibilityLabel("How to play")
+
             stat("SCORE", score)
             stat("BEST", max(scores.best(for: kind), score))
         }
@@ -125,18 +158,34 @@ struct GameChrome<Content: View>: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
         }
-        .frame(minWidth: 50)
-        .padding(.horizontal, 8)
+        .frame(minWidth: 42)
+        .padding(.horizontal, 7)
         .padding(.vertical, 5)
         .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.surface))
         .accessibilityElement(children: .combine)
+    }
+
+    private var shareButton: some View {
+        ShareLink(item: shareText) {
+            Label("Share result", systemImage: "square.and.arrow.up")
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .foregroundColor(.white.opacity(0.85))
+                .padding(.vertical, 6)
+        }
     }
 
     private var result: some View {
         ZStack {
             Color.black.opacity(0.65).ignoresSafeArea()
 
+            if StarRating.stars(for: fraction) >= 2 {
+                ConfettiView(colors: kind.colors + [.white, Color(hex: 0xF5C542)])
+                    .ignoresSafeArea()
+            }
+
             VStack(spacing: 12) {
+                StarRating(fraction: fraction)
+
                 Text(isNewBest ? "New best!" : (mode.isDaily ? "Today's result" : "Finished"))
                     .font(.system(size: 28, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
@@ -172,6 +221,8 @@ struct GameChrome<Content: View>: View {
                     }
                     .buttonStyle(PrimaryButtonStyle(kind: kind))
                     .padding(.top, 8)
+
+                    shareButton
                 } else {
                     VStack(spacing: 10) {
                         Button("Play again") {
@@ -184,6 +235,8 @@ struct GameChrome<Content: View>: View {
                             dismiss()
                         }
                         .buttonStyle(SecondaryButtonStyle())
+
+                        shareButton
                     }
                     .padding(.top, 8)
                 }

@@ -3,6 +3,8 @@ import SwiftUI
 struct FourfoldView: View {
     @StateObject private var game: FourfoldGame
     private let mode: PlayMode
+    /// Goes up by one on each wrong guess, which plays the shake.
+    @State private var shakes: CGFloat = 0
 
     private let kind = GameKind.fourfold
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
@@ -42,6 +44,7 @@ struct FourfoldView: View {
                     .padding(.vertical, 12)
                     .padding(.horizontal, 8)
                     .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(groupColors[index % 4]))
+                    .transition(.scale(scale: 0.85).combined(with: .opacity))
                 }
 
                 LazyVGrid(columns: columns, spacing: 8) {
@@ -49,7 +52,7 @@ struct FourfoldView: View {
                         let isSelected = game.selected.contains(word)
                         Button {
                             game.toggle(word)
-                            Haptics.tap()
+                            Feedback.tap()
                         } label: {
                             Text(word)
                                 .font(.system(size: 13, weight: .heavy, design: .rounded))
@@ -65,11 +68,15 @@ struct FourfoldView: View {
                                 )
                         }
                         .buttonStyle(.plain)
+                        .scaleEffect(isSelected ? 0.96 : 1)
+                        .modifier(ShakeEffect(animatableData: isSelected ? shakes : 0))
+                        .animation(.easeOut(duration: 0.12), value: isSelected)
                         .accessibilityLabel(isSelected ? "\(word), selected" : word)
                     }
                 }
 
                 if game.isOver {
+                    guessGrid
                     Button("See result") {
                         game.finish()
                     }
@@ -79,6 +86,27 @@ struct FourfoldView: View {
                 }
             }
         }
+    }
+
+    /// Every guess as four coloured squares, like a record of the game.
+    private var guessGrid: some View {
+        VStack(spacing: 8) {
+            Text("Your guesses").caption()
+            VStack(spacing: 5) {
+                ForEach(Array(game.history.enumerated()), id: \.offset) { _, guess in
+                    HStack(spacing: 5) {
+                        ForEach(Array(guess.enumerated()), id: \.offset) { _, group in
+                            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                .fill(groupColors[group % 4])
+                                .frame(width: 26, height: 26)
+                        }
+                    }
+                }
+            }
+        }
+        .panel()
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(game.history.count) guesses made")
     }
 
     private var controls: some View {
@@ -111,11 +139,17 @@ struct FourfoldView: View {
 
                 Button("Submit") {
                     let before = game.solvedGroups.count
-                    game.submit()
-                    if game.solvedGroups.count > before && game.mistakesLeft > 0 {
-                        Haptics.success()
-                    } else {
-                        Haptics.failure()
+                    let mistakesBefore = game.mistakes
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                        game.submit()
+                    }
+                    if game.solvedGroups.count > before && game.mistakes == mistakesBefore {
+                        Feedback.success()
+                    } else if game.mistakes > mistakesBefore {
+                        Feedback.failure()
+                        withAnimation(.linear(duration: 0.45)) {
+                            shakes += 1
+                        }
                     }
                 }
                 .buttonStyle(PrimaryButtonStyle(kind: kind))

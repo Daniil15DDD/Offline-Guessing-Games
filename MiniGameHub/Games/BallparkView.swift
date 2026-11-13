@@ -5,6 +5,8 @@ struct BallparkView: View {
     private let mode: PlayMode
     @State private var text = ""
     @State private var multiplier = 1.0
+    @State private var showCalculator = false
+    @State private var calculator = Calculator()
 
     private let kind = GameKind.ballpark
     private let multipliers: [(String, Double)] = [
@@ -90,9 +92,9 @@ struct BallparkView: View {
                 if let value = typedValue {
                     game.lockIn(value)
                     if game.lastPoints >= 70 {
-                        Haptics.success()
+                        Feedback.success()
                     } else {
-                        Haptics.bump()
+                        Feedback.bump()
                     }
                 }
             }
@@ -102,7 +104,88 @@ struct BallparkView: View {
             Text("One guess per question. You score by how many times too big or too small you were.")
                 .caption()
                 .multilineTextAlignment(.center)
+
+            Button {
+                showCalculator.toggle()
+            } label: {
+                Label(showCalculator ? "Hide calculator" : "Calculator", systemImage: "plus.forwardslash.minus")
+            }
+            .buttonStyle(SecondaryButtonStyle())
+
+            if showCalculator {
+                calculatorPad
+            }
         }
+    }
+
+    // MARK: - Calculator
+
+    private var calculatorPad: some View {
+        let rows: [[(String, Calculator.Key)]] = [
+            [("7", .digit(7)), ("8", .digit(8)), ("9", .digit(9)), ("/", .operation(.divide))],
+            [("4", .digit(4)), ("5", .digit(5)), ("6", .digit(6)), ("x", .operation(.multiply))],
+            [("1", .digit(1)), ("2", .digit(2)), ("3", .digit(3)), ("-", .operation(.subtract))],
+            [("0", .digit(0)), (".", .point), ("=", .equals), ("+", .operation(.add))]
+        ]
+        return VStack(spacing: 8) {
+            HStack {
+                Text(calculator.pendingSymbol ?? " ")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundColor(kind.accent)
+                Spacer()
+                Text(calculator.display)
+                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.4)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.black.opacity(0.35)))
+
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: 8) {
+                    ForEach(Array(row.enumerated()), id: \.offset) { _, key in
+                        calculatorKey(key.0) {
+                            calculator.press(key.1)
+                        }
+                    }
+                }
+            }
+
+            HStack(spacing: 8) {
+                calculatorKey("C") {
+                    calculator.press(.clear)
+                }
+                calculatorKey("Del") {
+                    calculator.press(.backspace)
+                }
+                Button("Use this") {
+                    text = calculator.display
+                    multiplier = 1
+                    showCalculator = false
+                }
+                .buttonStyle(PrimaryButtonStyle(kind: kind))
+                .disabled(calculator.value <= 0)
+            }
+        }
+        .panel(padding: 12)
+    }
+
+    private func calculatorKey(_ label: String, action: @escaping () -> Void) -> some View {
+        Button {
+            action()
+            Feedback.tap()
+        } label: {
+            Text(label)
+                .font(.system(size: 19, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 46)
+                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surfaceRaised))
+        }
+        .buttonStyle(.plain)
     }
 
     private var reveal: some View {
@@ -115,6 +198,10 @@ struct BallparkView: View {
                 .caption()
                 .multilineTextAlignment(.center)
             PointsBadge(points: game.lastPoints)
+            if game.factors.count > 1 {
+                Text("Average so far: \(NumberText.factor(game.averageFactor))")
+                    .caption()
+            }
             Button(game.roundIndex + 1 >= BallparkGame.rounds ? "See result" : "Next question") {
                 clear()
                 game.next()
@@ -127,5 +214,7 @@ struct BallparkView: View {
     private func clear() {
         text = ""
         multiplier = 1
+        calculator = Calculator()
+        showCalculator = false
     }
 }

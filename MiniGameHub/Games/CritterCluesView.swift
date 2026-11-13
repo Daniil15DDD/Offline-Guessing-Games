@@ -121,9 +121,9 @@ struct CritterCluesView: View {
         game.guess(critter)
         text = ""
         if game.solved {
-            Haptics.success()
+            Feedback.success()
         } else {
-            Haptics.tap()
+            Feedback.tap()
         }
     }
 }

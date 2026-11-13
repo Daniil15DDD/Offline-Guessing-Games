@@ -52,6 +52,97 @@ enum GameKind: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
+    /// How to play, shown from the question mark button in each game.
+    var rules: [String] {
+        switch self {
+        case .globe:
+            return [
+                "A mystery country is hidden somewhere on the globe.",
+                "Name any country. It lights up in a colour that shows how close it is to the answer: pale blue is far away, yellow is nearer, hot pink is next door.",
+                "Colour is the only clue, so use each guess to home in.",
+                "Drag the globe to turn it. Fewer guesses score more."
+            ]
+        case .fourfold:
+            return [
+                "Sixteen words hide four groups of four that belong together.",
+                "Tap four words you think share a link, then press Submit.",
+                "Watch out for words that seem to fit two groups. Only one full solution works.",
+                "\"One away\" means three of your four were right.",
+                "You can make four mistakes. Spare mistakes add to your score."
+            ]
+        case .topTen:
+            return [
+                "You are shown the title of a top-ten list.",
+                "Type anything you think is on it. Right answers drop into their place in the ranking.",
+                "Small spelling slips are forgiven.",
+                "Five wrong guesses end the round. You score 10 for each answer found."
+            ]
+        case .critter:
+            return [
+                "Guess the mystery animal in eight tries.",
+                "After each guess, six traits are compared with the answer.",
+                "Green means that trait matches. Amber means it partly matches, such as sharing one region but not all.",
+                "An arrow on legs or weight tells you whether the answer has more or less."
+            ]
+        case .deep:
+            return [
+                "Seven prompts, 25 seconds each. Type any answer that fits.",
+                "Every accepted answer lowers your fishing line. Obvious answers sink it 100 metres. The rarest sink it 1,000.",
+                "A wrong answer does not end the round, but it costs two seconds.",
+                "See how deep you can get by the last prompt."
+            ]
+        case .price:
+            return [
+                "You are shown an everyday item. Guess its typical shop price in US dollars.",
+                "After each guess you are told whether the real price is higher or lower. \"Close\" means you are within 25 percent.",
+                "Land within 5 percent to win. You have six guesses per item.",
+                "Fewer guesses score more."
+            ]
+        case .ballpark:
+            return [
+                "Three questions with big numbers for answers. You get one guess at each, so think it through.",
+                "Type a number and pick thousand, million, billion or trillion if you need to.",
+                "You are scored on how many times too big or too small you were. Spot on is 100 points, ten times off is 50.",
+                "The calculator is there for working things out. No looking things up."
+            ]
+        case .trend:
+            return [
+                "You see the first part of a real chart.",
+                "Drag across the shaded area to draw where you think the line went next.",
+                "Lock in to see the real data drawn over your line.",
+                "The closer your line is to the real one, the more you score."
+            ]
+        case .scale:
+            return [
+                "Two things are drawn side by side, but the one on the right is the wrong size.",
+                "Drag the slider until the pair looks true to life.",
+                "Lock in to see the real sizes.",
+                "Within about 6 percent scores 100. Twice or half the right size scores nothing."
+            ]
+        case .hue:
+            return [
+                "A colour is shown for three seconds. Remember it.",
+                "When it disappears, pick the same colour from memory: drag in the square for strength and brightness, and along the rainbow bar for the hue.",
+                "Lock in to see the two side by side.",
+                "The closer the match, the more you score."
+            ]
+        case .pitch:
+            return [
+                "Turn your sound on. Press the button to hear a note. You can hear it three times.",
+                "Move the slider to change your own note, and press \"Hear mine\" to listen to it.",
+                "Lock in when the two sound the same.",
+                "Within a quarter of a semitone scores 100."
+            ]
+        case .beat:
+            return [
+                "A beat plays six times, then stops.",
+                "Keep it going: tap the pad six times at the same speed.",
+                "Tapping too fast or too slow both lose points.",
+                "Within 2 percent of the tempo scores 100."
+            ]
+        }
+    }
+
     /// Picture shown on the hub tile (in the asset catalog).
     var art: String {
         switch self {

@@ -67,9 +67,9 @@ struct PitchMatchView: View {
                         TonePlayer.shared.stop()
                         game.lockIn()
                         if game.lastPoints >= 70 {
-                            Haptics.success()
+                            Feedback.success()
                         } else {
-                            Haptics.bump()
+                            Feedback.bump()
                         }
                     }
                     .buttonStyle(PrimaryButtonStyle(kind: kind))

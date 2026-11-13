@@ -51,9 +51,9 @@ struct TrendlineView: View {
                         Button("Lock in") {
                             game.submit()
                             if game.lastPoints >= 70 {
-                                Haptics.success()
+                                Feedback.success()
                             } else {
-                                Haptics.bump()
+                                Feedback.bump()
                             }
                         }
                         .buttonStyle(PrimaryButtonStyle(kind: kind))

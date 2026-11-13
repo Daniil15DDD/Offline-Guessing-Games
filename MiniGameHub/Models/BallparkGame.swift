@@ -12,6 +12,8 @@ final class BallparkGame: ObservableObject {
     @Published private(set) var guess: Double?
     /// How many times off the guess was (1 is exact).
     @Published private(set) var factor = 1.0
+    /// How far off every guess in this run was.
+    @Published private(set) var factors: [Double] = []
     @Published private(set) var lastPoints = 0
     @Published private(set) var score = 0
     @Published private(set) var isFinished = false
@@ -30,10 +32,17 @@ final class BallparkGame: ObservableObject {
 
     var revealed: Bool { guess != nil }
 
+    /// The run's average "times off". 1 is perfect, lower is better.
+    var averageFactor: Double {
+        let finite = factors.map { min($0, 1000) }
+        return finite.isEmpty ? 1 : finite.reduce(0, +) / Double(finite.count)
+    }
+
     func restart() {
         score = 0
         roundIndex = 0
         isFinished = false
+        factors = []
         deal()
     }
 
@@ -54,6 +63,7 @@ final class BallparkGame: ObservableObject {
         guess = value
         factor = Scoring.factorOff(guess: value, answer: question.answer)
         lastPoints = Scoring.estimate(guess: value, answer: question.answer)
+        factors.append(factor)
         score += lastPoints
     }
 

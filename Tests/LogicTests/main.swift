@@ -92,6 +92,35 @@ expect(NumberText.factor(1) == "spot on" && NumberText.factor(2.345) == "2.35x o
 expect(NumberText.parse("1,250.5") == 1250.5 && NumberText.parse("$40") == 40, "parse typed numbers")
 expect(NumberText.parse("") == nil && NumberText.parse("abc") == nil, "parse rejects junk")
 
+// MARK: - Calculator
+
+do {
+    func run(_ keys: [Calculator.Key]) -> Calculator {
+        var calculator = Calculator()
+        keys.forEach { calculator.press($0) }
+        return calculator
+    }
+    expect(run([.digit(1), .digit(2), .operation(.add), .digit(3), .equals]).display == "15", "12 + 3")
+    expect(run([.digit(6), .operation(.multiply), .digit(7), .equals]).display == "42", "6 x 7")
+    expect(run([.digit(2), .operation(.add), .digit(3), .operation(.multiply), .digit(4), .equals]).display == "20", "operators apply left to right")
+    expect(run([.digit(1), .operation(.divide), .digit(4), .equals]).display == "0.25", "1 / 4")
+    expect(run([.digit(5), .operation(.divide), .digit(0), .equals]).display == "0", "dividing by zero is safe")
+    expect(run([.digit(1), .point, .digit(5), .point, .digit(2)]).display == "1.52", "only one decimal point")
+    expect(run([.digit(1), .digit(2), .digit(3), .backspace]).display == "12", "backspace")
+    expect(run([.digit(9), .backspace, .backspace]).display == "0", "backspace on the last digit leaves zero")
+    expect(run([.digit(9), .operation(.add), .digit(1), .clear]).display == "0", "clear")
+    expect(run([.digit(8), .operation(.subtract), .digit(1), .digit(0), .equals]).display == "-2", "negative results")
+    expect(run([.digit(3), .operation(.multiply), .digit(1), .digit(0), .digit(0), .digit(0), .digit(0), .digit(0), .digit(0), .equals]).value == 3_000_000, "three times a million")
+    expect(run([.digit(7), .operation(.add), .equals]).display == "14", "equals repeats the number when none is typed")
+    expect(run([.digit(4), .operation(.add), .operation(.multiply), .digit(5), .equals]).display == "20", "the last operator pressed is the one used")
+    var chained = run([.digit(2), .operation(.multiply), .digit(3), .equals])
+    chained.press(.operation(.add))
+    chained.press(.digit(4))
+    chained.press(.equals)
+    expect(chained.display == "10", "a result can be used in the next sum")
+    expect(Calculator.format(1234567) == "1234567" && Calculator.format(0.5) == "0.5", "calculator number format")
+}
+
 // MARK: - Deck
 
 do {
@@ -402,6 +431,8 @@ do {
         game.submit()
     }
     expect(game.isOver && game.board.isEmpty && game.foundByPlayer == 4, "all groups found")
+    expect(game.history.count == 5 && game.history[0].count == 4, "every new guess is recorded, got \(game.history.count)")
+    expect(Set(game.history[0]).count == 2 && Set(game.history[1]).count == 1, "the record shows which groups were picked")
     expect(game.score == 400 + 3 * 25, "score counts spare mistakes, got \(game.score)")
     game.finish()
     expect(game.isFinished, "finish ends the run")
@@ -511,7 +542,11 @@ do {
     game.tick(now: start.addingTimeInterval(10))
     expect(abs(game.timeLeft - 15) < 0.01, "clock counts down, got \(game.timeLeft)")
     expect(game.submit("qqqqqq") == false && game.rejected.count == 1, "bad answer is rejected")
+    expect(abs(game.timeLeft - (15 - RareGame.missPenalty)) < 0.01, "a wrong answer costs two seconds, got \(game.timeLeft)")
     expect(game.submit("QQQQQQ") == false && game.rejected.count == 1, "the same bad answer is listed once")
+    expect(abs(game.timeLeft - (15 - RareGame.missPenalty)) < 0.01, "repeating a wrong answer costs nothing more")
+    game.tick(now: start.addingTimeInterval(11))
+    expect(abs(game.timeLeft - 12) < 0.01, "the clock keeps the penalty, got \(game.timeLeft)")
     let rare = game.prompt.answers.first { $0.tier == 5 }!
     expect(game.submit(rare.name), "rare answer accepted")
     expect(game.lastPoints == 100 && game.roundOver && game.score == 100, "rare answer scores 100")
@@ -552,6 +587,7 @@ do {
     expect(game.lastPoints == 0, "a thousand times off")
     game.next()
     expect(game.isFinished && game.score == 150, "ballpark total")
+    expect(game.factors.count == 3 && abs(game.averageFactor - (1 + 10 + 1000) / 3.0) < 0.001, "average times off, got \(game.averageFactor)")
 }
 
 // MARK: - Trendline

@@ -134,7 +134,7 @@ struct BeatKeeperView: View {
                 guard runToken == token else { return }
                 game.beatPlayed()
                 TonePlayer.shared.play(frequency: 880, duration: 0.06)
-                Haptics.tap()
+                Feedback.tap()
                 flash()
             }
         }
@@ -148,12 +148,12 @@ struct BeatKeeperView: View {
         guard game.phase == .tapping else { return }
         game.tap(at: ProcessInfo.processInfo.systemUptime)
         TonePlayer.shared.play(frequency: 660, duration: 0.05)
-        Haptics.tap()
+        Feedback.tap()
         if game.phase == .revealed {
             if game.lastPoints >= 70 {
-                Haptics.success()
+                Feedback.success()
             } else {
-                Haptics.bump()
+                Feedback.bump()
             }
         }
     }
