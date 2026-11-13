@@ -23,14 +23,26 @@ These screenshots were taken from the app running in the iOS Simulator.
 | Fourfold | Sort sixteen words into four hidden groups of four. Four mistakes allowed. | 1 puzzle | 500 |
 | Ten Count | Name everything on a top-ten list before five wrong guesses. | 1 list | 100 |
 | Critter Clues | Find the mystery animal. Each guess shows which traits match. | 1 animal, 8 guesses | 100 |
-| Deep Catch | Seven timed "name a ..." prompts. Rarer answers sink your fishing line deeper. | 7 prompts, 25 seconds each | 700 |
+| Deep Catch | Seven timed "name a ..." prompts. Rarer answers sink your fishing line deeper. A wrong answer costs two seconds. | 7 prompts, 25 seconds each | 700 |
 | Price Point | See an everyday item and guess its price, with higher or lower hints. | 3 items, 6 guesses each | 300 |
-| Ballpark | Estimate a big number in one guess. Scored by how many times off you were. | 3 questions | 300 |
+| Ballpark | Estimate a big number in one guess, with a calculator for the working out. Scored by how many times off you were. | 3 questions | 300 |
 | Trendline | The start of a real chart is shown. Draw where the line went next. | 3 charts | 300 |
 | Scale It | Resize one thing until it is the right size next to another. | 5 pairs | 500 |
 | Hue Recall | Study a colour for three seconds, then pick the same colour from memory. | 5 colours | 500 |
 | Pitch Match | Listen to a note, then tune your own note to match. | 5 notes | 500 |
 | Beat Keeper | Listen to a beat, then keep it going by tapping. | 5 beats | 500 |
+
+## Around the games
+
+- **How to play.** The question mark in each game's top bar opens a short
+  guide to that game.
+- **Results.** A run ends with a score, one to three stars, and a button to
+  share the result as text.
+- **Stats.** "Your stats" on the menu lists best score, games played and
+  average for every game, plus the daily streak.
+- **Sound and haptics.** Both can be switched off at the bottom of the menu.
+  The notes in Pitch Match and the clicks in Beat Keeper always play, since
+  those games need them.
 
 ## Daily and free play
 
@@ -89,9 +101,12 @@ MiniGameHub/
     GameChrome.swift       Top bar, result panel, score saving, shared styles
     HighScoreStore.swift   Offline best scores
     TonePlayer.swift       Sine tones for the two sound games
+    Effects.swift          Confetti, star rating, how-to-play sheet
+    Feedback.swift         Sound effects and haptics together
     Theme.swift, Haptics.swift
   Logic/                   Rules shared by several games (no screen code)
     Deck.swift             Free-play deck, daily puzzle picking, seeded randomness
+    Calculator.swift       The calculator in Ballpark
     TextMatch.swift        Forgiving matching of typed answers
     Geo.swift              Globe maths
     Scoring.swift          Point rules
@@ -149,11 +164,12 @@ Every push to a `claude/**` branch or a pull request runs
 checks and builds the app with Xcode for the iOS Simulator.
 
 What has been checked so far: the app builds with Xcode 26, more than 12,000
-rule and content checks pass, and every game was launched in the iOS Simulator
-and screenshotted. What has not been checked: nobody has played it by hand on
-a simulator or a real iPhone yet, so touch handling (typing, dragging the
-globe and the chart, tapping the beat) and the sound in Pitch Match and Beat
-Keeper are untested.
+rule and content checks pass, and every game, plus the stats, how-to-play,
+calculator and result screens, was launched in the iOS Simulator and
+screenshotted. What has not been checked: nobody has played it by hand on a
+simulator or a real iPhone yet, so touch handling (typing, dragging the globe
+and the chart, tapping the beat) and how the sound actually comes out are
+untested.
 
 To run the checks yourself from the repository root on a Mac:
 
@@ -176,5 +192,5 @@ named in the data exists).
   `deep`, `price`, `ballpark`, `trend`, `scale`, `hue`, `pitch`, `beat`) opens
   a game directly in free play. Set it under **Product > Scheme > Edit Scheme >
   Run > Arguments**.
-- The Haptics switch and the "Reset high scores" button are at the bottom of
-  the menu.
+- Stats, the sound and haptics switches and the reset button are at the bottom
+  of the menu.
