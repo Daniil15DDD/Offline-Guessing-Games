@@ -34,12 +34,17 @@ final class DailyStore: ObservableObject {
     }
 
     private func load() {
+        var loaded: [String: Int] = [:]
         if defaults.object(forKey: Key.day) != nil, defaults.integer(forKey: Key.day) == day {
-            results = (defaults.dictionary(forKey: Key.results) as? [String: Int]) ?? [:]
-        } else {
-            results = [:]
+            // Read each score leniently, so a value stored as text still counts.
+            for (key, value) in defaults.dictionary(forKey: Key.results) ?? [:] {
+                if let score = (value as? Int) ?? Int("\(value)") {
+                    loaded[key] = score
+                }
+            }
         }
-        lastPlayedDay = defaults.object(forKey: Key.lastPlayedDay) as? Int
+        results = loaded
+        lastPlayedDay = defaults.object(forKey: Key.lastPlayedDay) == nil ? nil : defaults.integer(forKey: Key.lastPlayedDay)
         let stored = defaults.integer(forKey: Key.streak)
         // A streak survives until a whole day is missed.
         if let last = lastPlayedDay, last >= day - 1 {

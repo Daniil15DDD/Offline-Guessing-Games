@@ -1,39 +1,68 @@
 # Offline Guessing Games
 
-An iPhone app with twelve small guessing games behind one menu. It is written
-in Swift and SwiftUI, needs no network and no accounts, and uses no
-third-party code. Every puzzle ships inside the app.
+An iPhone app with twelve guessing games behind one menu. It is written in
+Swift and SwiftUI, needs no network and no accounts, and uses no third-party
+code. Every puzzle ships inside the app.
 
 Each game is an original take on a popular style of web guessing game, with
 its own name, rules text, look and content. None of them copies the puzzles,
 data, images or branding of an existing game.
 
+| | | | |
+| --- | --- | --- | --- |
+| ![Daily menu](docs/screenshots/hub.jpg) | ![Getting Warmer](docs/screenshots/globe.jpg) | ![Deep Catch](docs/screenshots/deep.jpg) | ![Price Point](docs/screenshots/price.jpg) |
+| ![Fourfold](docs/screenshots/fourfold.jpg) | ![Critter Clues](docs/screenshots/critter.jpg) | ![Scale It](docs/screenshots/scale.jpg) | ![Ten Count](docs/screenshots/topTen.jpg) |
+
+These screenshots were taken from the app running in the iOS Simulator.
+
 ## The games
 
 | Game | How it plays | One run | Max |
 | --- | --- | --- | --- |
-| Borderline | Name the country from its outline. Each guess shows the distance and direction to the answer. | 3 countries, 6 guesses each | 300 |
+| Getting Warmer | A mystery country hides on the globe. Name countries: each lights up, hotter the closer it is. Colour is the only clue. | 1 country | 100 |
 | Fourfold | Sort sixteen words into four hidden groups of four. Four mistakes allowed. | 1 puzzle | 500 |
 | Ten Count | Name everything on a top-ten list before five wrong guesses. | 1 list | 100 |
 | Critter Clues | Find the mystery animal. Each guess shows which traits match. | 1 animal, 8 guesses | 100 |
-| Rare Find | Seven timed "name a ..." prompts. Less obvious answers score more. | 7 prompts, 25 seconds each | 700 |
-| Price Point | Guess what an everyday item costs, with higher or lower hints. | 3 items, 6 guesses each | 300 |
+| Deep Catch | Seven timed "name a ..." prompts. Rarer answers sink your fishing line deeper. | 7 prompts, 25 seconds each | 700 |
+| Price Point | See an everyday item and guess its price, with higher or lower hints. | 3 items, 6 guesses each | 300 |
 | Ballpark | Estimate a big number in one guess. Scored by how many times off you were. | 3 questions | 300 |
 | Trendline | The start of a real chart is shown. Draw where the line went next. | 3 charts | 300 |
 | Scale It | Resize one thing until it is the right size next to another. | 5 pairs | 500 |
-| Hue Recall | Study a colour for three seconds, then rebuild it with sliders. | 5 colours | 500 |
+| Hue Recall | Study a colour for three seconds, then pick the same colour from memory. | 5 colours | 500 |
 | Pitch Match | Listen to a note, then tune your own note to match. | 5 notes | 500 |
 | Beat Keeper | Listen to a beat, then keep it going by tapping. | 5 beats | 500 |
 
-| | | | |
-| --- | --- | --- | --- |
-| ![Menu](docs/screenshots/hub.jpg) | ![Borderline](docs/screenshots/borderline.jpg) | ![Fourfold](docs/screenshots/fourfold.jpg) | ![Critter Clues](docs/screenshots/critter.jpg) |
-| ![Ten Count](docs/screenshots/topTen.jpg) | ![Trendline](docs/screenshots/trend.jpg) | ![Scale It](docs/screenshots/scale.jpg) | ![Hue Recall](docs/screenshots/hue.jpg) |
+## Daily and free play
 
-These screenshots were taken from the app running in the iOS Simulator.
+The switch at the top of the menu chooses between two ways to play.
 
-Puzzles are dealt from a shuffled deck that is remembered between launches,
-so you see every puzzle in a game once before any repeats.
+- **Daily.** Every game has one puzzle per day. It is worked out from the
+  date, so it is the same all day and changes at your local midnight. You get
+  one go at each. The menu shows how many you have finished today and your
+  streak of days in a row.
+- **Free play.** As many rounds as you like, dealt from a shuffled deck that
+  is remembered between launches, so you see every puzzle once before any
+  repeats.
+
+There is no server. "Daily" means the app picks from the puzzles it already
+has, so each game's daily puzzles eventually come round again:
+
+| Game | Puzzles in the app | Notes |
+| --- | --- | --- |
+| Fourfold | 1,000 | 20 hand-written, the rest built from a bank of 97 word categories. Each built puzzle is checked to have exactly one solution. |
+| Scale It | 966 pairs | Built from families of things with well-known sizes. |
+| Hue Recall, Pitch Match, Beat Keeper | Unlimited | Each round is generated. |
+| Ballpark | 188 questions | Three per run. |
+| Getting Warmer | 165 countries | |
+| Price Point | 122 items | Three per run. |
+| Critter Clues | 68 animals | |
+| Ten Count | 45 lists | |
+| Deep Catch | 39 prompts | Seven per run, so daily prompts repeat after about six days. |
+| Trendline | 13 charts | Three per run, so daily charts repeat after about four days. |
+
+The fact-based games are smaller on purpose: they only contain figures that
+are well established, and none were invented to pad the numbers. To add more,
+edit that game's file in `MiniGameHub/Data/`.
 
 ## Run it
 
@@ -54,43 +83,49 @@ Pitch Match and Beat Keeper play sound, so turn the volume up for those.
 ```
 MiniGameHub/
   MiniGameHubApp.swift     App entry point, portrait lock
-  Hub/HubView.swift        Main menu: one card per game, best scores, settings
+  Hub/HubView.swift        Menu: Daily / Free play switch, a tile per game
   Shared/
-    GameKind.swift         The list of games (title, colours, max score)
+    GameKind.swift         The list of games (title, colours, artwork)
     GameChrome.swift       Top bar, result panel, score saving, shared styles
-    HighScoreStore.swift   Offline high scores
+    HighScoreStore.swift   Offline best scores
     TonePlayer.swift       Sine tones for the two sound games
     Theme.swift, Haptics.swift
   Logic/                   Rules shared by several games (no screen code)
+    Deck.swift             Free-play deck, daily puzzle picking, seeded randomness
     TextMatch.swift        Forgiving matching of typed answers
-    Geo.swift              Distance and direction between two places
+    Geo.swift              Globe maths
     Scoring.swift          Point rules
-    Deck.swift             Shuffled, remembered puzzle order
     Atlas.swift            Reads the country outlines
   Data/                    All puzzle content, one file per game
-  Models/                  One engine per game: its state and rules
+    WordBank.swift         Word categories and the Fourfold puzzle builder
+  Models/                  One engine per game, plus DailyStore
   Games/                   One SwiftUI screen per game
+  Assets.xcassets/Art      Pictures
 Tests/LogicTests/          Command-line checks for the rules and content
+Licenses/                  Licence for the pictures
 ```
 
-**Navigation.** `HubView` holds a `NavigationStack`. Tapping a card pushes that
-game's screen. Every screen is wrapped in `GameChrome`, which draws the top bar
-and the result panel and has the back button.
+**Navigation.** `HubView` holds a `NavigationStack`. Tapping a tile pushes that
+game's screen in daily mode or free play. Every screen is wrapped in
+`GameChrome`, which draws the top bar and the result panel.
 
 **Engine and screen.** Each game has an engine in `Models/` (an
 `ObservableObject` holding the state and rules) and a screen in `Games/` that
 only draws that state and passes taps along. The engines do not import SwiftUI,
 which is what lets the tests run them from the command line.
 
-**High scores.** `HighScoreStore` keeps one best score per game in
-`UserDefaults`, which lives on the device and needs no network. `GameChrome`
-submits the score when a run ends and when you leave a game part-way.
+**Scores.** `HighScoreStore` keeps one best score per game and `DailyStore`
+keeps today's daily results and the streak. Both use `UserDefaults`, which
+lives on the device and needs no network.
 
 **Adding a game.** Add a case to `GameKind`, write an engine and a screen, and
 add the screen to the `switch` in `HubView`.
 
 ## About the content
 
+- **Pictures** of products, animals and the menu artwork come from
+  Microsoft's Fluent Emoji set, used under the MIT licence. See
+  `Licenses/FluentEmoji-LICENSE.txt`.
 - **Country outlines** come from Natural Earth (public domain,
   naturalearthdata.com) at 1:110m scale. The game uses the 165 United Nations
   member states present in that data. Far-off overseas territories and very
@@ -101,9 +136,10 @@ add the screen to the `switch` in `HubView`.
 - **Price Point prices** are rough reference prices for a typical mid-range
   item in a US shop, chosen for the game. They are not live prices and do not
   come from any particular shop. Change them in `Data/PriceItems.swift`.
-- **Rare Find tiers** are the author's estimate of how obvious each answer
-  is. Online games of this kind rank answers by what real players type, which
-  an offline app cannot do. Change them in `Data/RarePrompts.swift`.
+- **Deep Catch rarity tiers** are the author's estimate of how obvious each
+  answer is. Online games of this kind rank answers by what real players
+  type, which an offline app cannot do. Change them in
+  `Data/RarePrompts.swift`.
 - **Fourfold puzzles and Critter Clues animals** were written for this app.
 
 ## Testing
@@ -112,12 +148,12 @@ Every push to a `claude/**` branch or a pull request runs
 `.github/workflows/ios-build.yml` on GitHub, which runs the rule and content
 checks and builds the app with Xcode for the iOS Simulator.
 
-What has been checked so far: the app builds with Xcode 26, the rule and
-content checks pass, and every game was launched in the iOS Simulator and
-screenshotted at its opening state and part-way through a round. What has not
-been checked: nobody has played it by hand on a simulator or a real iPhone
-yet, so touch handling (typing, dragging on the chart, tapping the beat) and
-the sound in Pitch Match and Beat Keeper are untested.
+What has been checked so far: the app builds with Xcode 26, more than 12,000
+rule and content checks pass, and every game was launched in the iOS Simulator
+and screenshotted. What has not been checked: nobody has played it by hand on
+a simulator or a real iPhone yet, so touch handling (typing, dragging the
+globe and the chart, tapping the beat) and the sound in Pitch Match and Beat
+Keeper are untested.
 
 To run the checks yourself from the repository root on a Mac:
 
@@ -127,17 +163,18 @@ swiftc -swift-version 5 MiniGameHub/Logic/*.swift MiniGameHub/Data/*.swift \
 ./logic-tests
 ```
 
-They cover the answer matching, the geography maths, the scoring, every game
-engine played through from start to finish, and the content itself (for
-example that every Fourfold puzzle has sixteen different words, that every
-accepted spelling in a list resolves to the right entry, and that no two
-animals look identical to the clue system).
+They cover the answer matching, the globe maths, the scoring, daily puzzle
+picking, every game engine played through from start to finish, and the
+content itself (for example that every built Fourfold puzzle has exactly one
+solution, that every accepted spelling in a list resolves to the right entry,
+that no two animals look identical to the clue system, and that every picture
+named in the data exists).
 
 ## Tips
 
-- Launch argument `-startGame borderline` (or `fourfold`, `topTen`, `critter`,
-  `rare`, `price`, `ballpark`, `trend`, `scale`, `hue`, `pitch`, `beat`) opens
-  a game directly. Set it under **Product > Scheme > Edit Scheme > Run >
-  Arguments**.
+- Launch argument `-startGame globe` (or `fourfold`, `topTen`, `critter`,
+  `deep`, `price`, `ballpark`, `trend`, `scale`, `hue`, `pitch`, `beat`) opens
+  a game directly in free play. Set it under **Product > Scheme > Edit Scheme >
+  Run > Arguments**.
 - The Haptics switch and the "Reset high scores" button are at the bottom of
   the menu.
