@@ -124,7 +124,7 @@ struct GettingWarmerView: View {
         guard let best = game.ranked.first else {
             return "Any country is a good first guess."
         }
-        return best.distanceKm == 0 ? "\(best.name) touches it." : "Closest so far: \(best.name)"
+        return "Warmest so far: \(best.name)"
     }
 
     private var reveal: some View {
@@ -155,6 +155,7 @@ struct GettingWarmerView: View {
 }
 
 /// The colour scale: icy blue when far away, through yellow, to hot pink.
+/// Colour is the only clue the game gives. It never shows a distance.
 enum Heat {
     static let found = Color(hex: 0x3BE38B)
 
@@ -202,9 +203,9 @@ private struct GuessRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
                 .fill(guess.isCorrect ? Heat.found : Heat.color(guess.heat))
-                .frame(width: 22, height: 22)
+                .frame(width: 44, height: 24)
             Text(guess.name)
                 .bodyText(15)
                 .lineLimit(1)
@@ -212,11 +213,6 @@ private struct GuessRow: View {
             Spacer(minLength: 4)
             if guess.isCorrect {
                 Image(systemName: "checkmark.circle.fill").foregroundColor(Heat.found)
-            } else {
-                Text(guess.distanceKm == 0 ? "Touching" : "\(NumberText.grouped(Double(guess.distanceKm))) km")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundColor(Theme.textSecondary)
             }
         }
         .padding(.horizontal, 14)
