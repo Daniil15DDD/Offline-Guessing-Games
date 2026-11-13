@@ -28,6 +28,22 @@ jobs:
             -target MiniGameHub \
             -sdk iphonesimulator \
             -configuration Debug \
-            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
             SYMROOT="$RUNNER_TEMP/build" \
             build 2>&1 | grep -E "error|warning: unre|BUILD|\*\*" | head -200
+
+      # A zipped simulator build, for trying the app in a browser-based
+      # iPhone simulator when no Mac is to hand. Download it from the
+      # "Artifacts" section of the workflow run page.
+      - name: Package the simulator build
+        run: |
+          cd "$RUNNER_TEMP/build/Debug-iphonesimulator"
+          lipo -archs MiniGameHub.app/MiniGameHub
+          zip -r -y -q "$RUNNER_TEMP/MiniGameHub-simulator.zip" MiniGameHub.app
+          ls -lh "$RUNNER_TEMP/MiniGameHub-simulator.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MiniGameHub-simulator-build
+          path: ${{ runner.temp }}/MiniGameHub-simulator.zip
+          retention-days: 30
