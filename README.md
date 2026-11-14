@@ -27,22 +27,44 @@ These screenshots were taken from the app running in the iOS Simulator.
 | Price Point | See an everyday item and guess its price, with higher or lower hints. | 3 items, 6 guesses each | 300 |
 | Ballpark | Estimate a big number in one guess, with a calculator for the working out. Scored by how many times off you were. | 3 questions | 300 |
 | Trendline | The start of a real chart is shown. Draw where the line went next. | 3 charts | 300 |
-| Scale It | Resize one thing until it is the right size next to another. | 5 pairs | 500 |
+| Scale It | Two outlines stand side by side. Resize one until the pair looks true to life. | 5 pairs | 500 |
 | Hue Recall | Study a colour for three seconds, then pick the same colour from memory. | 5 colours | 500 |
 | Pitch Match | Listen to a note, then tune your own note to match. | 5 notes | 500 |
 | Beat Keeper | Listen to a beat, then keep it going by tapping. | 5 beats | 500 |
 
 ## Around the games
 
-- **How to play.** The question mark in each game's top bar opens a short
-  guide to that game.
+- **How to play.** The question mark in each game's navigation bar opens a
+  short guide to that game.
 - **Results.** A run ends with a score, one to three stars, and a button to
   share the result as text.
-- **Stats.** "Your stats" on the menu lists best score, games played and
-  average for every game, plus the daily streak.
-- **Sound and haptics.** Both can be switched off at the bottom of the menu.
-  The notes in Pitch Match and the clicks in Beat Keeper always play, since
-  those games need them.
+- **Stats.** The chart button at the top of the menu lists best score, games
+  played and average for every game, plus the daily streak.
+- **Sound and haptics.** Both can be switched off from the "..." button at
+  the top of the menu. The notes in Pitch Match and the clicks in Beat Keeper
+  always play, since those games need them.
+
+## Look and feel
+
+The app is styled to sit naturally on iOS rather than to look like a game
+with its own skin.
+
+- **System pieces first.** The system typeface, the system navigation bar
+  (so swiping from the left edge goes back), a segmented control, menus and
+  sheets. Game icons are SF Symbols on rounded squares.
+- **Materials.** Cards and bars are translucent and pick up a soft wash of
+  each game's colour from behind.
+- **Motion.** Everything moves on springs, which can be interrupted and
+  redirected part-way. Buttons respond the moment a finger lands, not when
+  it lifts. Things that appear from below leave the same way. Overshoot is
+  kept for moments with momentum behind them, such as a points badge
+  popping in.
+- **Direct manipulation.** The globe follows the finger exactly, keeps
+  turning after a flick and can be caught mid-spin, and pinching zooms it.
+  Sliders and the chart follow the finger with no animation in between.
+- **Accessibility.** With Reduce Motion on, movement becomes short fades,
+  the confetti is skipped and the globe does not coast. With Reduce
+  Transparency on, the system makes the materials solid.
 
 ## Daily and free play
 
@@ -62,7 +84,7 @@ has, so each game's daily puzzles eventually come round again:
 | Game | Puzzles in the app | Notes |
 | --- | --- | --- |
 | Fourfold | 1,000 | 20 hand-written, the rest built from a bank of 97 word categories. Each built puzzle is checked to have exactly one solution. |
-| Scale It | 966 pairs | Built from families of things with well-known sizes. |
+| Scale It | 988 pairs | Built from families of things with well-known sizes: planets and moons, balls, landmarks, mountains and animals. |
 | Hue Recall, Pitch Match, Beat Keeper | Unlimited | Each round is generated. |
 | Ballpark | 188 questions | Three per run. |
 | Getting Warmer | 165 countries | |
@@ -95,15 +117,17 @@ Pitch Match and Beat Keeper play sound, so turn the volume up for those.
 ```
 MiniGameHub/
   MiniGameHubApp.swift     App entry point, portrait lock
-  Hub/HubView.swift        Menu: Daily / Free play switch, a tile per game
+  Hub/HubView.swift        Menu: Daily / Free play switch, a row per game
   Shared/
-    GameKind.swift         The list of games (title, colours, artwork)
-    GameChrome.swift       Top bar, result panel, score saving, shared styles
+    GameKind.swift         The list of games (title, colours, icon)
+    GameChrome.swift       Navigation bar, score strip, result card, shared styles
+    Theme.swift            Colours, springs and transitions, game icons
+    Silhouettes.swift      The outlines drawn in Scale It
     HighScoreStore.swift   Offline best scores
     TonePlayer.swift       Sine tones for the two sound games
     Effects.swift          Confetti, star rating, how-to-play sheet
     Feedback.swift         Sound effects and haptics together
-    Theme.swift, Haptics.swift
+    Haptics.swift
   Logic/                   Rules shared by several games (no screen code)
     Deck.swift             Free-play deck, daily puzzle picking, seeded randomness
     Calculator.swift       The calculator in Ballpark
@@ -115,14 +139,16 @@ MiniGameHub/
     WordBank.swift         Word categories and the Fourfold puzzle builder
   Models/                  One engine per game, plus DailyStore
   Games/                   One SwiftUI screen per game
-  Assets.xcassets/Art      Pictures
+  Assets.xcassets/Art      Pictures of products, animals and sea life
+  Assets.xcassets/Silhouettes   Animal outlines for Scale It
 Tests/LogicTests/          Command-line checks for the rules and content
 Licenses/                  Licence for the pictures
 ```
 
-**Navigation.** `HubView` holds a `NavigationStack`. Tapping a tile pushes that
+**Navigation.** `HubView` holds a `NavigationStack`. Tapping a row pushes that
 game's screen in daily mode or free play. Every screen is wrapped in
-`GameChrome`, which draws the top bar and the result panel.
+`GameChrome`, which sets up the navigation bar, the score strip under it and
+the result card.
 
 **Engine and screen.** Each game has an engine in `Models/` (an
 `ObservableObject` holding the state and rules) and a screen in `Games/` that
@@ -138,9 +164,12 @@ add the screen to the `switch` in `HubView`.
 
 ## About the content
 
-- **Pictures** of products, animals and the menu artwork come from
-  Microsoft's Fluent Emoji set, used under the MIT licence. See
-  `Licenses/FluentEmoji-LICENSE.txt`.
+- **Pictures** of products, animals and sea life come from Microsoft's
+  Fluent Emoji set, used under the MIT licence. See
+  `Licenses/FluentEmoji-LICENSE.txt`. The seven animal outlines in Scale It
+  are traced from the same set. The outlines of landmarks, mountains, balls
+  and planets are drawn in code and are simplified shapes, not surveys.
+- **Icons** in the interface are Apple's SF Symbols, which ship with iOS.
 - **Country outlines** come from Natural Earth (public domain,
   naturalearthdata.com) at 1:110m scale. The game uses the 165 United Nations
   member states present in that data. Far-off overseas territories and very
@@ -165,11 +194,11 @@ checks and builds the app with Xcode for the iOS Simulator.
 
 What has been checked so far: the app builds with Xcode 26, more than 12,000
 rule and content checks pass, and every game, plus the stats, how-to-play,
-calculator and result screens, was launched in the iOS Simulator and
-screenshotted. What has not been checked: nobody has played it by hand on a
-simulator or a real iPhone yet, so touch handling (typing, dragging the globe
-and the chart, tapping the beat) and how the sound actually comes out are
-untested.
+calculator and result screens and every Scale It outline, was launched in
+the iOS Simulator and screenshotted. What has not been checked by the
+author: the animations and gestures in motion. Screenshots are still images,
+so how the springs, the globe's flick and pinch, and the sound actually feel
+has only been judged from the code.
 
 To run the checks yourself from the repository root on a Mac:
 
@@ -192,5 +221,5 @@ named in the data exists).
   `deep`, `price`, `ballpark`, `trend`, `scale`, `hue`, `pitch`, `beat`) opens
   a game directly in free play. Set it under **Product > Scheme > Edit Scheme >
   Run > Arguments**.
-- Stats, the sound and haptics switches and the reset button are at the bottom
-  of the menu.
+- Stats, the sound and haptics switches and the reset button are behind the
+  two buttons at the top right of the menu.

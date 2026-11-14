@@ -277,7 +277,7 @@ private struct GameRow: View {
                 Text(kind.tagline)
                     .font(.subheadline)
                     .foregroundColor(Theme.textSecondary)
-                    .lineLimit(2)
+                    .lineLimit(3)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }

@@ -54,9 +54,11 @@ struct CritterCluesView: View {
                         }
                     }
                     .padding(.horizontal, 10)
-                    ForEach(game.rows.reversed()) { row in
-                        ClueRow(row: row)
-                            .transition(Motion.rise)
+                    VStack(spacing: 10) {
+                        ForEach(game.rows.reversed()) { row in
+                            ClueRow(row: row)
+                                .transition(Motion.rise)
+                        }
                     }
                 }
             }

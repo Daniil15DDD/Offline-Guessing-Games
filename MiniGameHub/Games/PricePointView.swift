@@ -43,22 +43,24 @@ struct PricePointView: View {
                     Text("\(game.guessesLeft) guesses left").caption()
                 }
 
-                ForEach(game.guesses.reversed()) { guess in
-                    HStack {
-                        Text(Self.money(guess.amount))
-                            .font(.system(size: 17, weight: .semibold))
-                            .monospacedDigit()
-                            .foregroundColor(.white)
-                        Spacer()
-                        if guess.isClose && guess.hint != .correct {
-                            Text("Close").caption()
+                VStack(spacing: 8) {
+                    ForEach(game.guesses.reversed()) { guess in
+                        HStack {
+                            Text(Self.money(guess.amount))
+                                .font(.system(size: 17, weight: .semibold))
+                                .monospacedDigit()
+                                .foregroundColor(.white)
+                            Spacer()
+                            if guess.isClose && guess.hint != .correct {
+                                Text("Close").caption()
+                            }
+                            Label(Self.label(guess.hint), systemImage: Self.symbol(guess.hint))
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(guess.hint == .correct ? Theme.good : (guess.isClose ? Theme.near : Theme.bad))
                         }
-                        Label(Self.label(guess.hint), systemImage: Self.symbol(guess.hint))
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(guess.hint == .correct ? Theme.good : (guess.isClose ? Theme.near : Theme.bad))
+                        .row()
+                        .transition(Motion.rise)
                     }
-                    .row()
-                    .transition(Motion.rise)
                 }
             }
         }

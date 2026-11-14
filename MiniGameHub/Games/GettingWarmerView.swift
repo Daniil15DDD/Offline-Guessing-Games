@@ -51,9 +51,11 @@ struct GettingWarmerView: View {
                     entry
                 }
 
-                ForEach(game.ranked) { guess in
-                    GuessRow(guess: guess)
-                        .transition(Motion.rise)
+                VStack(spacing: 8) {
+                    ForEach(game.ranked) { guess in
+                        GuessRow(guess: guess)
+                            .transition(Motion.rise)
+                    }
                 }
             }
         }

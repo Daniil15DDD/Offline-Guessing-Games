@@ -40,6 +40,13 @@ struct ScaleItView: View {
                            height: targetHeight, color: kind.accent)
                 }
                 .frame(height: maxHeight + 52, alignment: .bottom)
+                // The ground both outlines stand on.
+                .overlay(alignment: .bottom) {
+                    Rectangle()
+                        .fill(Theme.hairline)
+                        .frame(height: 1)
+                        .padding(.bottom, 41.5)
+                }
                 .panel()
                 // The outline follows the slider exactly while it is dragged.
                 // Only the jump to the real size on reveal is animated.

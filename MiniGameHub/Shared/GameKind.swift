@@ -37,7 +37,7 @@ enum GameKind: String, CaseIterable, Identifiable, Hashable {
 
     var tagline: String {
         switch self {
-        case .globe: return "Name countries. Hotter colours mean closer."
+        case .globe: return "Name countries. Warmer means closer."
         case .fourfold: return "Sort sixteen words into four hidden groups."
         case .topTen: return "Name everything on a top-ten list."
         case .critter: return "Find the mystery animal from its traits."
