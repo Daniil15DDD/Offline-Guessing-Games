@@ -5,7 +5,7 @@ struct BallparkView: View {
     private let mode: PlayMode
     @State private var text = ""
     @State private var multiplier = 1.0
-    @State private var showCalculator = DemoMode.flag("calc")
+    @State private var showCalculator = false
     @State private var calculator = Calculator()
 
     private let kind = GameKind.ballpark

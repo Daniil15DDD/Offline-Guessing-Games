@@ -49,7 +49,6 @@
 		CB92AE8A7147388B64CA6BE7 /* ScaleGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E0F5B486E2A0B6F481AE608 /* ScaleGame.swift */; };
 		45D68135A6B87FAADB200F64 /* TopTenGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 967752B81825E08991937C05 /* TopTenGame.swift */; };
 		DD97DE3FA5B6C3473D230D34 /* TrendGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1186E9776F8410B8A9F2DC4 /* TrendGame.swift */; };
-		49391FC785F64706386D4C51 /* DemoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */; };
 		1DEEC210A40D9FE2423678A2 /* Effects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FCED270739C05EBFEE0E5A6 /* Effects.swift */; };
 		4B838BC14AC99F858EC04FED /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00AC265B1856CC463885622D /* Feedback.swift */; };
 		2264BD8436DA0BCB3464E358 /* GameChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D31E42E39D9E515B43A4453 /* GameChrome.swift */; };
@@ -107,7 +106,6 @@
 		1E0F5B486E2A0B6F481AE608 /* ScaleGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaleGame.swift; sourceTree = "<group>"; };
 		967752B81825E08991937C05 /* TopTenGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopTenGame.swift; sourceTree = "<group>"; };
 		D1186E9776F8410B8A9F2DC4 /* TrendGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendGame.swift; sourceTree = "<group>"; };
-		5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMode.swift; sourceTree = "<group>"; };
 		2FCED270739C05EBFEE0E5A6 /* Effects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Effects.swift; sourceTree = "<group>"; };
 		00AC265B1856CC463885622D /* Feedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
 		3D31E42E39D9E515B43A4453 /* GameChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameChrome.swift; sourceTree = "<group>"; };
@@ -243,7 +241,6 @@
 		8836D1940D6E7D2B5DC2AEA3 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				5E208BB1D5F30DEC35D8C855 /* DemoMode.swift */,
 				2FCED270739C05EBFEE0E5A6 /* Effects.swift */,
 				00AC265B1856CC463885622D /* Feedback.swift */,
 				3D31E42E39D9E515B43A4453 /* GameChrome.swift */,
@@ -368,7 +365,6 @@
 				CB92AE8A7147388B64CA6BE7 /* ScaleGame.swift in Sources */,
 				45D68135A6B87FAADB200F64 /* TopTenGame.swift in Sources */,
 				DD97DE3FA5B6C3473D230D34 /* TrendGame.swift in Sources */,
-				49391FC785F64706386D4C51 /* DemoMode.swift in Sources */,
 				1DEEC210A40D9FE2423678A2 /* Effects.swift in Sources */,
 				4B838BC14AC99F858EC04FED /* Feedback.swift in Sources */,
 				2264BD8436DA0BCB3464E358 /* GameChrome.swift in Sources */,

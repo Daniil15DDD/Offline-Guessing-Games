@@ -22,7 +22,7 @@ struct GettingWarmerView: View {
 
     init(mode: PlayMode = .free) {
         self.mode = mode
-        _game = StateObject(wrappedValue: DemoMode.globe(mode))
+        _game = StateObject(wrappedValue: GlobeGame(mode: mode))
     }
 
     var body: some View {

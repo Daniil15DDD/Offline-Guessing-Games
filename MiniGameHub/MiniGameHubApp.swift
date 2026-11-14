@@ -9,15 +9,7 @@ struct MiniGameHubApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                if DemoMode.flag("gallery1") {
-                    SilhouetteGallery(page: 0)
-                } else if DemoMode.flag("gallery2") {
-                    SilhouetteGallery(page: 1)
-                } else {
-                    HubView()
-                }
-            }
+            HubView()
                 .environmentObject(scores)
                 .environmentObject(daily)
                 .preferredColorScheme(.dark)
