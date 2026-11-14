@@ -15,7 +15,7 @@ struct HubView: View {
     @AppStorage(Haptics.enabledKey) private var hapticsEnabled = true
     @AppStorage(Sound.enabledKey) private var soundEnabled = true
     @AppStorage("hub.showDaily") private var showDaily = true
-    @State private var showStats = false
+    @State private var showStats = DemoMode.flag("stats")
     @State private var path: [GameRoute] = []
     @State private var confirmReset = false
 

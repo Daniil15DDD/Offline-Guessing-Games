@@ -10,7 +10,7 @@ struct CritterCluesView: View {
 
     init(mode: PlayMode = .free) {
         self.mode = mode
-        _game = StateObject(wrappedValue: CritterGame(mode: mode))
+        _game = StateObject(wrappedValue: DemoMode.critter(mode))
     }
 
     var body: some View {
