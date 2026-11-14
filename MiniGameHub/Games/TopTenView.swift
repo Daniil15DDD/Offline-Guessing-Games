@@ -9,7 +9,7 @@ struct TopTenView: View {
 
     init(mode: PlayMode = .free) {
         self.mode = mode
-        _game = StateObject(wrappedValue: TopTenGame(mode: mode))
+        _game = StateObject(wrappedValue: DemoMode.topTen(mode))
     }
 
     var body: some View {

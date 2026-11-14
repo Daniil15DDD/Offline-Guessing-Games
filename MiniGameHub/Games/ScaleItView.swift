@@ -11,7 +11,7 @@ struct ScaleItView: View {
 
     init(mode: PlayMode = .free) {
         self.mode = mode
-        _game = StateObject(wrappedValue: ScaleGame(mode: mode))
+        _game = StateObject(wrappedValue: DemoMode.scale(mode))
     }
 
     var body: some View {

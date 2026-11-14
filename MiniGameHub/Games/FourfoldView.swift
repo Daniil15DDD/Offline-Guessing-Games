@@ -14,7 +14,7 @@ struct FourfoldView: View {
 
     init(mode: PlayMode = .free) {
         self.mode = mode
-        _game = StateObject(wrappedValue: FourfoldGame(mode: mode))
+        _game = StateObject(wrappedValue: DemoMode.fourfold(mode))
     }
 
     var body: some View {
