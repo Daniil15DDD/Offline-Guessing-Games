@@ -21,18 +21,16 @@ struct TopTenView: View {
             isFinished: game.isFinished,
             onRestart: {
                 text = ""
-                game.restart()
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
             }
         ) {
             GameColumn {
                 VStack(spacing: 6) {
-                    Image("hub_topten")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 60, height: 60)
-                        .accessibilityHidden(true)
+                    Text("TOP TEN").eyebrow()
                     Text(game.list.title)
-                        .bodyText(22, weight: .heavy)
+                        .bodyText(24, weight: .bold)
                         .multilineTextAlignment(.center)
                     Text(game.list.basis)
                         .caption()
@@ -45,15 +43,28 @@ struct TopTenView: View {
                         game.finish()
                     }
                     .buttonStyle(PrimaryButtonStyle(kind: kind))
+                    .transition(Motion.rise)
                 } else {
                     entry
                 }
 
-                VStack(spacing: 6) {
+                VStack(spacing: 0) {
                     ForEach(Array(game.list.entries.enumerated()), id: \.offset) { index, entry in
                         row(rank: index + 1, entry: entry, found: game.found.contains(index))
+                        if index < game.list.entries.count - 1 {
+                            Rectangle()
+                                .fill(Theme.hairline)
+                                .frame(height: 0.5)
+                                .padding(.leading, 52)
+                        }
                     }
                 }
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                        .strokeBorder(Theme.hairline, lineWidth: 0.5)
+                )
 
                 if !game.wrongGuesses.isEmpty {
                     Text("Not on the list: " + game.wrongGuesses.joined(separator: ", "))
@@ -75,8 +86,10 @@ struct TopTenView: View {
 
             HStack(spacing: 5) {
                 ForEach(0..<TopTenGame.maxWrong, id: \.self) { index in
-                    Image(systemName: index < game.livesLeft ? "heart.fill" : "heart")
-                        .foregroundColor(index < game.livesLeft ? Theme.bad : Theme.surfaceRaised)
+                    Image(systemName: "heart.fill")
+                        .font(.footnote)
+                        .foregroundColor(index < game.livesLeft ? Theme.bad : Theme.fillStrong)
+                        .animation(Motion.quick, value: game.livesLeft)
                 }
                 Text(game.message)
                     .caption()
@@ -84,11 +97,14 @@ struct TopTenView: View {
                     .minimumScaleFactor(0.7)
                 Spacer()
                 Button("Give up") {
-                    game.giveUp()
+                    withAnimation(Motion.settle) {
+                        game.giveUp()
+                    }
                 }
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.system(size: 15))
                 .foregroundColor(Theme.bad)
             }
+            .padding(.horizontal, 4)
             .accessibilityElement(children: .contain)
         }
     }
@@ -96,31 +112,40 @@ struct TopTenView: View {
     private func row(rank: Int, entry: TopTenEntry, found: Bool) -> some View {
         HStack(spacing: 12) {
             Text("\(rank)")
-                .font(.system(size: 15, weight: .heavy, design: .rounded))
+                .font(.system(size: 15, weight: .semibold))
                 .monospacedDigit()
-                .foregroundColor(found ? .white : Theme.textSecondary)
+                .foregroundColor(found ? kind.accent : Theme.textTertiary)
                 .frame(width: 26)
             if found {
-                Text(entry.name).bodyText(16)
+                Text(entry.name)
+                    .bodyText(16)
+                    .transition(Motion.rise)
             } else if game.isOver {
                 Text(entry.name)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .foregroundColor(Theme.bad)
+                    .font(.system(size: 16))
+                    .foregroundColor(Theme.textSecondary)
+                    .transition(.opacity)
             } else {
                 Text(" ").bodyText(16)
             }
             Spacer()
+            if found {
+                Image(systemName: "checkmark")
+                    .font(.footnote.weight(.bold))
+                    .foregroundColor(kind.accent)
+                    .transition(Motion.pop)
+            }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(found ? kind.accent.opacity(0.35) : Theme.surface)
-        )
+        .padding(.horizontal, 14)
+        .frame(minHeight: 44)
+        .background(kind.accent.opacity(found ? 0.14 : 0))
     }
 
     private func submit() {
-        let outcome = game.submit(text)
+        var outcome = TopTenGame.Outcome.ignored
+        withAnimation(Motion.settle) {
+            outcome = game.submit(text)
+        }
         switch outcome {
         case .correct:
             Feedback.success()

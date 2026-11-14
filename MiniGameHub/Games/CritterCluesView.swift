@@ -22,42 +22,62 @@ struct CritterCluesView: View {
             isFinished: game.isFinished,
             onRestart: {
                 text = ""
-                game.restart()
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
             }
         ) {
             GameColumn {
                 if game.isOver {
                     reveal
+                        .transition(Motion.rise)
                 } else {
                     entry
                 }
 
                 if game.rows.isEmpty {
                     if !game.isOver {
-                        Image("hub_critter")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 110, height: 110)
-                            .padding(.top, 6)
-                            .accessibilityHidden(true)
+                        VStack(spacing: 10) {
+                            legend(Theme.good, "Green", "That trait matches the mystery animal.")
+                            legend(Theme.near, "Amber", "It partly matches, such as one shared region.")
+                            legend(Theme.fillStrong, "Arrows", "The answer has more or fewer legs, or weighs more or less.")
+                        }
+                        .panel()
                     }
-                    Text("Guess any animal. Green means that trait matches the mystery animal, amber means partly, and arrows say whether the answer has more or less.")
-                        .caption()
-                        .multilineTextAlignment(.center)
                 } else {
                     HStack(spacing: 4) {
                         ForEach(headings, id: \.self) { heading in
                             Text(heading.uppercased())
-                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .font(.system(size: 9, weight: .semibold))
                                 .foregroundColor(Theme.textSecondary)
                                 .frame(maxWidth: .infinity)
                         }
                     }
+                    .padding(.horizontal, 10)
                     ForEach(game.rows.reversed()) { row in
                         ClueRow(row: row)
+                            .transition(Motion.rise)
                     }
                 }
             }
+        }
+    }
+
+    /// One line of the key shown before the first guess.
+    private func legend(_ colour: Color, _ name: String, _ meaning: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(colour)
+                .frame(width: 14, height: 14)
+                .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 1 }
+            Text(name)
+                .bodyText(15)
+                .frame(width: 58, alignment: .leading)
+            Text(meaning)
+                .font(.system(size: 15))
+                .foregroundColor(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
         }
     }
 
@@ -77,24 +97,30 @@ struct CritterCluesView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 30, height: 30)
-                        Text(critter.name).bodyText()
+                        Text(critter.name).bodyText(16, weight: .regular)
                         Spacer()
-                        Image(systemName: "arrow.up.left").foregroundColor(Theme.textSecondary)
+                        Image(systemName: "arrow.up.left")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundColor(Theme.textTertiary)
                     }
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
+                    .padding(.vertical, 9)
+                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.fill))
                 }
+                .buttonStyle(PressableButtonStyle())
             }
             HStack {
                 Text("\(Critters.all.count) animals to choose from").caption()
                 Spacer()
                 Button("Give up") {
-                    game.giveUp()
+                    withAnimation(Motion.settle) {
+                        game.giveUp()
+                    }
                 }
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.system(size: 15))
                 .foregroundColor(Theme.bad)
             }
+            .padding(.horizontal, 4)
         }
     }
 
@@ -104,9 +130,9 @@ struct CritterCluesView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 120, height: 120)
-            Text(game.solved ? "You found it" : "It was").caption()
+            Text(game.solved ? "YOU FOUND IT" : "IT WAS").eyebrow()
             Text(game.target.name)
-                .bodyText(26, weight: .heavy)
+                .bodyText(28, weight: .bold)
                 .multilineTextAlignment(.center)
             PointsBadge(points: game.score)
             Button("See result") {
@@ -118,7 +144,9 @@ struct CritterCluesView: View {
     }
 
     private func choose(_ critter: Critter) {
-        game.guess(critter)
+        withAnimation(Motion.settle) {
+            game.guess(critter)
+        }
         text = ""
         if game.solved {
             Feedback.success()
@@ -150,20 +178,20 @@ private struct ClueRow: View {
             }
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Theme.surface))
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.fill))
     }
 
     private func cell(_ text: String, _ mark: CritterGame.Mark) -> some View {
         VStack(spacing: 2) {
             Text(text)
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.system(size: 10, weight: .semibold))
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
                 .minimumScaleFactor(0.6)
             if mark == .higher {
-                Image(systemName: "arrow.up").font(.system(size: 10, weight: .heavy))
+                Image(systemName: "arrow.up").font(.system(size: 10, weight: .bold))
             } else if mark == .lower {
-                Image(systemName: "arrow.down").font(.system(size: 10, weight: .heavy))
+                Image(systemName: "arrow.down").font(.system(size: 10, weight: .bold))
             }
         }
         .foregroundColor(.white)
@@ -178,7 +206,7 @@ private struct ClueRow: View {
         switch mark {
         case .match: return Theme.good
         case .partial: return Theme.near
-        case .miss, .higher, .lower: return Theme.surfaceRaised
+        case .miss, .higher, .lower: return Theme.fillStrong
         }
     }
 

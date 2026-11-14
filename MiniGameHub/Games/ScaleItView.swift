@@ -5,8 +5,9 @@ struct ScaleItView: View {
     private let mode: PlayMode
 
     private let kind = GameKind.scale
-    /// The larger of the two shapes is always drawn this big.
-    private let fullSize: CGFloat = 190
+    /// The space each outline may use.
+    private let maxHeight: CGFloat = 190
+    private let maxWidth: CGFloat = 150
 
     init(mode: PlayMode = .free) {
         self.mode = mode
@@ -25,29 +26,36 @@ struct ScaleItView: View {
             GameColumn {
                 VStack(spacing: 4) {
                     Text("\(game.pair.targetName) next to \(game.pair.referenceName)")
-                        .bodyText(18, weight: .heavy)
+                        .bodyText(20, weight: .bold)
                         .multilineTextAlignment(.center)
                     Text("Slide until the one on the right is its true size.")
                         .caption()
                         .multilineTextAlignment(.center)
                 }
 
-                HStack(alignment: .bottom, spacing: 18) {
-                    figure(name: game.pair.referenceName, size: referenceSize, color: Color(hex: 0x8FA0D8))
-                    figure(name: game.pair.targetName, size: targetSize, color: kind.accent)
+                HStack(alignment: .bottom, spacing: 14) {
+                    figure(name: game.pair.referenceName, outline: game.pair.referenceOutline,
+                           height: referenceHeight, color: Color(white: 0.78))
+                    figure(name: game.pair.targetName, outline: game.pair.targetOutline,
+                           height: targetHeight, color: kind.accent)
                 }
-                .frame(height: fullSize + 50, alignment: .bottom)
+                .frame(height: maxHeight + 52, alignment: .bottom)
                 .panel()
-                .animation(.easeOut(duration: 0.35), value: game.revealed)
+                // The outline follows the slider exactly while it is dragged.
+                // Only the jump to the real size on reveal is animated.
+                .animation(Motion.settle, value: game.revealed)
 
                 if game.revealed {
                     reveal
+                        .transition(Motion.rise)
                 } else {
                     Slider(value: $game.slider, in: 0...1)
                         .tint(kind.accent)
-                        .accessibilityLabel("Size of the \(game.pair.targetName)")
+                        .accessibilityLabel("Size of \(game.pair.targetName)")
                     Button("Lock in") {
-                        game.lockIn()
+                        withAnimation(Motion.settle) {
+                            game.lockIn()
+                        }
                         if game.lastPoints >= 70 {
                             Feedback.success()
                         } else {
@@ -60,52 +68,32 @@ struct ScaleItView: View {
         }
     }
 
-    /// After the reveal the shapes snap to the real proportions.
-    private var shownRatio: Double {
-        game.revealed ? game.pair.ratio : game.ratio
+    /// After the reveal the outlines snap to the real proportions.
+    private var shownRatio: CGFloat {
+        CGFloat(game.revealed ? game.pair.ratio : game.ratio)
     }
 
-    private var referenceSize: CGFloat {
-        shownRatio <= 1 ? fullSize : fullSize / CGFloat(shownRatio)
+    /// The tallest either outline may be drawn so that both still fit their
+    /// half of the card, even when one of them is very wide.
+    private var fullHeight: CGFloat {
+        let widest = max(Silhouettes.aspect(for: game.pair.referenceOutline),
+                         Silhouettes.aspect(for: game.pair.targetOutline))
+        return min(maxHeight, maxWidth / max(widest, 0.01))
     }
 
-    private var targetSize: CGFloat {
-        shownRatio <= 1 ? fullSize * CGFloat(shownRatio) : fullSize
+    private var referenceHeight: CGFloat {
+        shownRatio <= 1 ? fullHeight : fullHeight / shownRatio
     }
 
-    private func figure(name: String, size: CGFloat, color: Color) -> some View {
+    private var targetHeight: CGFloat {
+        shownRatio <= 1 ? fullHeight * shownRatio : fullHeight
+    }
+
+    private func figure(name: String, outline: String, height: CGFloat, color: Color) -> some View {
         VStack(spacing: 8) {
-            if game.pair.shape == .circle {
-                Circle()
-                    .fill(color)
-                    .overlay(
-                        // A highlight and a shaded edge so it reads as a ball.
-                        Circle().fill(
-                            RadialGradient(
-                                colors: [.white.opacity(0.55), .white.opacity(0), .black.opacity(0.28)],
-                                center: UnitPoint(x: 0.32, y: 0.28),
-                                startRadius: 0,
-                                endRadius: max(size, 2) * 0.75
-                            )
-                        )
-                    )
-                    .frame(width: max(size, 2), height: max(size, 2))
-            } else {
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(color)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous).fill(
-                            LinearGradient(
-                                colors: [.white.opacity(0.35), .white.opacity(0), .black.opacity(0.25)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                    )
-                    .frame(width: 44, height: max(size, 2))
-            }
+            SilhouetteView(key: outline, height: max(height, 2), color: color)
             Text(name)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.footnote.weight(.semibold))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -113,6 +101,7 @@ struct ScaleItView: View {
                 .frame(height: 34)
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 
     private var reveal: some View {
@@ -128,7 +117,9 @@ struct ScaleItView: View {
                 .multilineTextAlignment(.center)
             PointsBadge(points: game.lastPoints)
             Button(game.roundIndex + 1 >= ScaleGame.rounds ? "See result" : "Next pair") {
-                game.next()
+                withAnimation(Motion.settle) {
+                    game.next()
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }

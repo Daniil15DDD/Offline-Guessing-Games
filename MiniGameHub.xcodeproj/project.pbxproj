@@ -55,6 +55,7 @@
 		08DD6FAE68BDEEA57649A9E3 /* GameKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95C17793C525FD73D3424FBD /* GameKind.swift */; };
 		87ACA04CB9BE49EADC0A2120 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA6F5EB854E2020D108AD4F /* Haptics.swift */; };
 		A0D416917B5DAFC0255C81CC /* HighScoreStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6C1574AB6A95D74EECB084 /* HighScoreStore.swift */; };
+		745E42B2C8708679C90D6114 /* Silhouettes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FB49506501953DCC050E614 /* Silhouettes.swift */; };
 		A8B6615A504726B69415BC0F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21779E245365A5802B4494EB /* Theme.swift */; };
 		BF8A8D9A8193663A12C290BB /* TonePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A47303D0444EAB65C78CB14D /* TonePlayer.swift */; };
 		8A3F467F731761D49BFEFA33 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 864C4BC8E1F9AE592B74BF8B /* Assets.xcassets */; };
@@ -111,6 +112,7 @@
 		95C17793C525FD73D3424FBD /* GameKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameKind.swift; sourceTree = "<group>"; };
 		EEA6F5EB854E2020D108AD4F /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		6D6C1574AB6A95D74EECB084 /* HighScoreStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighScoreStore.swift; sourceTree = "<group>"; };
+		3FB49506501953DCC050E614 /* Silhouettes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Silhouettes.swift; sourceTree = "<group>"; };
 		21779E245365A5802B4494EB /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A47303D0444EAB65C78CB14D /* TonePlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonePlayer.swift; sourceTree = "<group>"; };
 		864C4BC8E1F9AE592B74BF8B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -245,6 +247,7 @@
 				95C17793C525FD73D3424FBD /* GameKind.swift */,
 				EEA6F5EB854E2020D108AD4F /* Haptics.swift */,
 				6D6C1574AB6A95D74EECB084 /* HighScoreStore.swift */,
+				3FB49506501953DCC050E614 /* Silhouettes.swift */,
 				21779E245365A5802B4494EB /* Theme.swift */,
 				A47303D0444EAB65C78CB14D /* TonePlayer.swift */,
 			);
@@ -368,6 +371,7 @@
 				08DD6FAE68BDEEA57649A9E3 /* GameKind.swift in Sources */,
 				87ACA04CB9BE49EADC0A2120 /* Haptics.swift in Sources */,
 				A0D416917B5DAFC0255C81CC /* HighScoreStore.swift in Sources */,
+				745E42B2C8708679C90D6114 /* Silhouettes.swift in Sources */,
 				A8B6615A504726B69415BC0F /* Theme.swift in Sources */,
 				BF8A8D9A8193663A12C290BB /* TonePlayer.swift in Sources */,
 				42FBBB13C3AFBBC0445B63B5 /* MiniGameHubApp.swift in Sources */,

@@ -21,13 +21,18 @@ struct HueRecallView: View {
             status: "Colour \(game.roundIndex + 1) of \(HueGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,
-            onRestart: { game.restart() }
+            onRestart: {
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
+            }
         ) {
             GameColumn {
                 if started {
                     roundContent
                 } else {
                     intro
+                        .transition(Motion.rise)
                 }
             }
         }
@@ -40,18 +45,17 @@ struct HueRecallView: View {
 
     private var intro: some View {
         VStack(spacing: 12) {
-            Image("hub_hue")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 96, height: 96)
-                .accessibilityHidden(true)
+            GameIcon(kind: kind, size: 72)
+                .padding(.top, 4)
             Text("\(HueGame.rounds) colours to remember")
-                .bodyText(20, weight: .heavy)
+                .bodyText(22, weight: .bold)
             Text("You are shown a colour for \(Int(HueGame.showSeconds)) seconds. Then it disappears and you pick the same colour from memory.")
                 .caption()
                 .multilineTextAlignment(.center)
             Button("Start") {
-                started = true
+                withAnimation(Motion.settle) {
+                    started = true
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }
@@ -63,7 +67,7 @@ struct HueRecallView: View {
         switch game.phase {
         case .memorize:
             Text("Remember this colour")
-                .bodyText(19, weight: .heavy)
+                .bodyText(19, weight: .bold)
             ZStack {
                 swatch(game.target, height: 300)
                 // Countdown ring.
@@ -75,22 +79,27 @@ struct HueRecallView: View {
                     .stroke(Color.white, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .frame(width: 74, height: 74)
+                    // Glide between clock ticks so the ring does not step.
+                    .animation(.linear(duration: 0.1), value: game.timeLeft)
                 Text("\(Int(game.timeLeft.rounded(.up)))")
-                    .font(.system(size: 28, weight: .heavy, design: .rounded))
+                    .font(.system(size: 28, weight: .bold))
+                    .monospacedDigit()
                     .foregroundColor(.white)
                     .shadow(color: .black.opacity(0.4), radius: 3)
             }
 
         case .recreate:
             Text("Now match it from memory")
-                .bodyText(19, weight: .heavy)
+                .bodyText(19, weight: .bold)
             swatch(game.guess, height: 96)
             ColourPad(colour: $game.guess)
                 .frame(height: 220)
             HueStrip(hue: $game.guess.hue)
                 .frame(height: 34)
             Button("Lock in") {
-                game.lockIn()
+                withAnimation(Motion.settle) {
+                    game.lockIn()
+                }
                 if game.lastPoints >= 70 {
                     Feedback.success()
                 } else {
@@ -104,25 +113,27 @@ struct HueRecallView: View {
                 compare("The colour", game.target)
                 compare("Yours", game.guess)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
             Text("\(HueGame.matchPercent(target: game.target, guess: game.guess))% match")
-                .bodyText(20, weight: .heavy)
+                .bodyText(22, weight: .bold)
             PointsBadge(points: game.lastPoints)
             Button(game.roundIndex + 1 >= HueGame.rounds ? "See result" : "Next colour") {
-                game.next()
+                withAnimation(Motion.settle) {
+                    game.next()
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }
     }
 
     private func swatch(_ colour: HSB, height: CGFloat) -> some View {
-        RoundedRectangle(cornerRadius: 22, style: .continuous)
+        RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
             .fill(Color(hue: colour.hue, saturation: colour.saturation, brightness: colour.brightness))
             .frame(height: height)
             .frame(maxWidth: .infinity)
             .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                    .strokeBorder(Theme.hairline, lineWidth: 0.5)
             )
     }
 
@@ -130,11 +141,11 @@ struct HueRecallView: View {
         ZStack(alignment: .bottom) {
             Color(hue: colour.hue, saturation: colour.saturation, brightness: colour.brightness)
             Text(label)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.white)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(Capsule().fill(Color.black.opacity(0.4)))
+                .background(.ultraThinMaterial, in: Capsule())
                 .padding(.bottom, 12)
         }
         .frame(height: 220)
@@ -165,7 +176,7 @@ private struct ColourPad: View {
                         y: size.height * CGFloat(1 - colour.brightness)
                     )
             }
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
             .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)

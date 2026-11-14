@@ -20,12 +20,16 @@ struct TrendlineView: View {
             status: "Chart \(game.roundIndex + 1) of \(TrendGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,
-            onRestart: { game.restart() }
+            onRestart: {
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
+            }
         ) {
             GameColumn {
                 VStack(spacing: 4) {
                     Text(game.series.title)
-                        .bodyText(21, weight: .heavy)
+                        .bodyText(22, weight: .bold)
                         .multilineTextAlignment(.center)
                     Text(game.series.unit)
                         .caption()
@@ -38,18 +42,23 @@ struct TrendlineView: View {
 
                 if game.revealed {
                     reveal
+                        .transition(Motion.rise)
                 } else {
                     Text("Drag across the shaded area to draw what happened after \(String(game.series.years[game.series.shown - 1])).")
                         .caption()
                         .multilineTextAlignment(.center)
                     HStack(spacing: 10) {
                         Button("Clear") {
-                            game.clearDrawing()
+                            withAnimation(Motion.quick) {
+                                game.clearDrawing()
+                            }
                         }
                         .buttonStyle(SecondaryButtonStyle())
 
                         Button("Lock in") {
-                            game.submit()
+                            withAnimation(Motion.settle) {
+                                game.submit()
+                            }
                             if game.lastPoints >= 70 {
                                 Feedback.success()
                             } else {
@@ -70,13 +79,16 @@ struct TrendlineView: View {
                 Label("Your line", systemImage: "circle.fill").foregroundColor(kind.accent)
                 Label("Real data", systemImage: "circle.fill").foregroundColor(Theme.good)
             }
-            .font(.system(size: 13, weight: .semibold, design: .rounded))
+            .font(.system(size: 13, weight: .semibold))
+            .labelStyle(.titleAndIcon)
             Text("Source: \(game.series.source)")
                 .caption()
                 .multilineTextAlignment(.center)
             PointsBadge(points: game.lastPoints)
             Button(game.roundIndex + 1 >= TrendGame.rounds ? "See result" : "Next chart") {
-                game.next()
+                withAnimation(Motion.settle) {
+                    game.next()
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }
@@ -105,7 +117,7 @@ struct TrendlineView: View {
             ZStack(alignment: .topLeading) {
                 // Area the player draws in.
                 Rectangle()
-                    .fill(kind.accent.opacity(0.12))
+                    .fill(kind.accent.opacity(0.1))
                     .frame(width: plot.maxX - xFor(series.shown - 1), height: plot.height)
                     .offset(x: xFor(series.shown - 1), y: plot.minY)
 
@@ -115,7 +127,7 @@ struct TrendlineView: View {
                     path.addLine(to: CGPoint(x: plot.minX, y: plot.maxY))
                     path.addLine(to: CGPoint(x: plot.maxX, y: plot.maxY))
                 }
-                .stroke(Theme.textSecondary.opacity(0.6), lineWidth: 1)
+                .stroke(Theme.textTertiary, lineWidth: 1)
 
                 axisLabel(NumberText.plain(series.axisMax), x: 0, y: plot.minY - 6, width: 40, alignment: .trailing)
                 axisLabel(NumberText.plain(series.axisMin), x: 0, y: plot.maxY - 8, width: 40, alignment: .trailing)
@@ -140,10 +152,12 @@ struct TrendlineView: View {
                     }
                 }
 
-                if game.revealed {
-                    line(points: ((series.shown - 1)..<count).map { CGPoint(x: xFor($0), y: yFor(series.values[$0])) })
-                        .stroke(Theme.good, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                }
+                // The real line draws itself across from where the known
+                // part ends, so the eye follows what actually happened.
+                line(points: ((series.shown - 1)..<count).map { CGPoint(x: xFor($0), y: yFor(series.values[$0])) })
+                    .trim(from: 0, to: game.revealed ? 1 : 0)
+                    .stroke(Theme.good, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .animation(game.revealed ? Motion.draw : nil, value: game.revealed)
             }
             .contentShape(Rectangle())
             .gesture(
@@ -160,7 +174,8 @@ struct TrendlineView: View {
 
     private func axisLabel(_ text: String, x: CGFloat, y: CGFloat, width: CGFloat, alignment: Alignment) -> some View {
         Text(text)
-            .font(.system(size: 10, weight: .semibold, design: .rounded))
+            .font(.system(size: 10, weight: .medium))
+            .monospacedDigit()
             .foregroundColor(Theme.textSecondary)
             .lineLimit(1)
             .minimumScaleFactor(0.5)

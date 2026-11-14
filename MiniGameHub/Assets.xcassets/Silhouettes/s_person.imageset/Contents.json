@@ -1,7 +1,7 @@
 {
   "images": [
     {
-      "filename": "hub_critter.png",
+      "filename": "s_person.png",
       "idiom": "universal",
       "scale": "2x"
     }
@@ -9,5 +9,8 @@
   "info": {
     "author": "xcode",
     "version": 1
+  },
+  "properties": {
+    "template-rendering-intent": "template"
   }
 }

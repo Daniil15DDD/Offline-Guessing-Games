@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct DeepCatchView: View {
     @StateObject private var game: RareGame
@@ -40,6 +41,7 @@ struct DeepCatchView: View {
                     roundContent
                 } else {
                     intro
+                        .transition(Motion.rise)
                 }
             }
         }
@@ -53,13 +55,15 @@ struct DeepCatchView: View {
     private var intro: some View {
         VStack(spacing: 12) {
             Text("How deep can your line go?")
-                .bodyText(20, weight: .heavy)
+                .bodyText(20, weight: .bold)
                 .multilineTextAlignment(.center)
             Text("\(RareGame.rounds) prompts, \(Int(RareGame.secondsPerPrompt)) seconds each. Any answer that fits lowers the hook. Obvious answers sink it 100 metres. The rarest sink it 1,000.")
                 .caption()
                 .multilineTextAlignment(.center)
             Button("Cast off") {
-                started = true
+                withAnimation(Motion.settle) {
+                    started = true
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }
@@ -69,28 +73,30 @@ struct DeepCatchView: View {
     @ViewBuilder
     private var roundContent: some View {
         VStack(spacing: 12) {
-            Text("PROMPT \(game.roundIndex + 1) OF \(RareGame.rounds)")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundColor(Theme.textSecondary)
+            Text("PROMPT \(game.roundIndex + 1) OF \(RareGame.rounds)").eyebrow()
             Text(game.prompt.text)
-                .bodyText(23, weight: .heavy)
+                .bodyText(23, weight: .bold)
                 .multilineTextAlignment(.center)
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Theme.surfaceRaised)
+                    Capsule().fill(Theme.fillStrong)
                     Capsule()
                         .fill(game.timeLeft > 8 ? kind.accent : Theme.bad)
                         .frame(width: geometry.size.width * CGFloat(game.timeLeft / RareGame.secondsPerPrompt))
+                        // The clock ticks ten times a second. Gliding
+                        // between ticks keeps the bar from stepping.
+                        .animation(.linear(duration: 0.1), value: game.timeLeft)
                 }
             }
-            .frame(height: 8)
+            .frame(height: 6)
             .accessibilityLabel("\(Int(game.timeLeft.rounded(.up))) seconds left")
         }
         .panel()
 
         if game.roundOver {
             reveal
+                .transition(Motion.rise)
         } else {
             HStack(spacing: 8) {
                 AnswerField(placeholder: "Your answer", text: $text, onSubmit: submit)
@@ -100,7 +106,7 @@ struct DeepCatchView: View {
             }
             if !game.rejected.isEmpty {
                 Text("No bite: " + game.rejected.joined(separator: ", "))
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .font(.system(size: 13))
                     .foregroundColor(Theme.bad)
                     .multilineTextAlignment(.center)
             }
@@ -115,16 +121,16 @@ struct DeepCatchView: View {
                     .scaledToFit()
                     .frame(width: 84, height: 84)
                 Text(RarePrompts.tierNames[answer.tier - 1].uppercased() + " ANSWER")
-                    .font(.system(size: 12, weight: .heavy, design: .rounded))
+                    .font(.caption2.weight(.semibold))
                     .foregroundColor(kind.accent)
                 Text(answer.name)
-                    .bodyText(24, weight: .heavy)
+                    .bodyText(24, weight: .bold)
                     .multilineTextAlignment(.center)
                 Text("\(NumberText.grouped(Double(game.lastPoints * Self.metresPerPoint))) m deeper")
-                    .font(.system(size: 22, weight: .heavy, design: .rounded))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundColor(Theme.good)
             } else {
-                Text("Out of time").bodyText(22, weight: .heavy)
+                Text("Out of time").bodyText(22, weight: .bold)
                 Text("The hook stays where it is.").caption()
             }
             if !game.rarestExamples.isEmpty {
@@ -134,7 +140,9 @@ struct DeepCatchView: View {
             }
             Button(game.roundIndex + 1 >= RareGame.rounds ? "Reel in" : "Next prompt") {
                 text = ""
-                game.next()
+                withAnimation(Motion.settle) {
+                    game.next()
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
             .padding(.top, 4)
@@ -149,22 +157,20 @@ struct DeepCatchView: View {
     /// The whole dive, shown after the last prompt.
     private var diveLog: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("DIVE LOG")
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundColor(Theme.textSecondary)
+            Text("DIVE LOG").eyebrow()
             ForEach(game.log) { entry in
                 HStack(alignment: .top, spacing: 8) {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(entry.answer ?? "No answer")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(entry.answer == nil ? Theme.bad : .white)
                         Text(entry.prompt)
-                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .font(.system(size: 12))
                             .foregroundColor(Theme.textSecondary)
                     }
                     Spacer(minLength: 4)
                     Text(entry.points > 0 ? "\(NumberText.grouped(Double(entry.points * Self.metresPerPoint))) m" : "0 m")
-                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .font(.system(size: 15, weight: .semibold))
                         .monospacedDigit()
                         .foregroundColor(entry.points > 0 ? Theme.good : Theme.textSecondary)
                 }
@@ -187,7 +193,11 @@ struct DeepCatchView: View {
 
     private func submit() {
         guard !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        if game.submit(text) {
+        var accepted = false
+        withAnimation(Motion.settle) {
+            accepted = game.submit(text)
+        }
+        if accepted {
             Feedback.success()
         } else {
             Feedback.failure()
@@ -267,7 +277,7 @@ private struct WaterColumn: View {
                             .fill(Color.white.opacity(0.25))
                             .frame(width: 8, height: 1)
                         Text("\(NumberText.grouped(Double(mark)))")
-                            .font(.system(size: 9, weight: .semibold, design: .rounded))
+                            .font(.system(size: 9, weight: .semibold))
                             .foregroundColor(.white.opacity(0.45))
                     }
                     .offset(x: 0, y: y(Double(mark)) - 5)
@@ -303,23 +313,28 @@ private struct WaterColumn: View {
                     .position(x: lineX, y: hookY + 12)
 
                 Text("\(NumberText.grouped(depth)) m")
-                    .font(.system(size: 13, weight: .heavy, design: .rounded))
+                    .font(.system(size: 13, weight: .bold))
                     .monospacedDigit()
                     .foregroundColor(.white)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 4)
-                    .background(Capsule().fill(Color.black.opacity(0.45)))
+                    .background(.ultraThinMaterial, in: Capsule())
                     .position(x: lineX + 58, y: max(hookY + 12, surface + 14))
             }
-            .animation(.spring(response: 1.1, dampingFraction: 0.82), value: depth)
+            // A weight on a line: slow to get going, with a little bob as
+            // the line takes up the slack.
+            .animation(UIAccessibility.isReduceMotionEnabled ? .easeInOut(duration: 0.2) : .spring(response: 1.0, dampingFraction: 0.8), value: depth)
         }
         .frame(height: 270)
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                .strokeBorder(Theme.hairline, lineWidth: 0.5)
         )
         .onAppear {
+            // The sea life drifts gently. Left still when the player has
+            // asked the system for less motion.
+            guard !UIAccessibility.isReduceMotionEnabled else { return }
             withAnimation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true)) {
                 drifting = true
             }

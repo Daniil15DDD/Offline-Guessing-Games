@@ -32,26 +32,25 @@ struct BallparkView: View {
             isFinished: game.isFinished,
             onRestart: {
                 clear()
-                game.restart()
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
             }
         ) {
             GameColumn {
                 VStack(spacing: 8) {
-                    Image("hub_ballpark")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 64, height: 64)
-                        .accessibilityHidden(true)
+                    Text("QUESTION \(game.roundIndex + 1)").eyebrow()
                     Text(game.question.text)
-                        .bodyText(22, weight: .heavy)
+                        .bodyText(24, weight: .bold)
                         .multilineTextAlignment(.center)
                     Text(game.question.unit.isEmpty ? "Answer with a number" : "Answer in \(game.question.unit)")
                         .caption()
                 }
-                .panel()
+                .panel(padding: 20)
 
                 if game.revealed {
                     reveal
+                        .transition(Motion.rise)
                 } else {
                     entry
                 }
@@ -67,20 +66,22 @@ struct BallparkView: View {
                 ForEach(multipliers, id: \.0) { name, value in
                     Button {
                         multiplier = value
+                        Feedback.tap()
                     } label: {
                         Text(name)
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .font(.system(size: 13, weight: .semibold))
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
+                            .foregroundColor(multiplier == value ? .black : .white)
+                            .frame(maxWidth: .infinity, minHeight: 38)
                             .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(multiplier == value ? kind.accent : Theme.surfaceRaised)
+                                RoundedRectangle(cornerRadius: Theme.chipRadius, style: .continuous)
+                                    .fill(multiplier == value ? Color.white : Theme.fillStrong)
                             )
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(PressableButtonStyle())
+                    .animation(Motion.quick, value: multiplier)
+                    .accessibilityAddTraits(multiplier == value ? .isSelected : [])
                 }
             }
 
@@ -90,7 +91,9 @@ struct BallparkView: View {
 
             Button("Lock in") {
                 if let value = typedValue {
-                    game.lockIn(value)
+                    withAnimation(Motion.settle) {
+                        game.lockIn(value)
+                    }
                     if game.lastPoints >= 70 {
                         Feedback.success()
                     } else {
@@ -106,7 +109,9 @@ struct BallparkView: View {
                 .multilineTextAlignment(.center)
 
             Button {
-                showCalculator.toggle()
+                withAnimation(Motion.settle) {
+                    showCalculator.toggle()
+                }
             } label: {
                 Label(showCalculator ? "Hide calculator" : "Calculator", systemImage: "plus.forwardslash.minus")
             }
@@ -114,6 +119,7 @@ struct BallparkView: View {
 
             if showCalculator {
                 calculatorPad
+                    .transition(Motion.rise)
             }
         }
     }
@@ -130,11 +136,11 @@ struct BallparkView: View {
         return VStack(spacing: 8) {
             HStack {
                 Text(calculator.pendingSymbol ?? " ")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(kind.accent)
                 Spacer()
                 Text(calculator.display)
-                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                    .font(.system(size: 30, weight: .light))
                     .monospacedDigit()
                     .foregroundColor(.white)
                     .lineLimit(1)
@@ -142,7 +148,7 @@ struct BallparkView: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.black.opacity(0.35)))
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.black.opacity(0.3)))
 
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
                 HStack(spacing: 8) {
@@ -164,7 +170,9 @@ struct BallparkView: View {
                 Button("Use this") {
                     text = calculator.display
                     multiplier = 1
-                    showCalculator = false
+                    withAnimation(Motion.settle) {
+                        showCalculator = false
+                    }
                 }
                 .buttonStyle(PrimaryButtonStyle(kind: kind))
                 .disabled(calculator.value <= 0)
@@ -179,20 +187,20 @@ struct BallparkView: View {
             Feedback.tap()
         } label: {
             Text(label)
-                .font(.system(size: 19, weight: .bold, design: .rounded))
+                .font(.system(size: 21, weight: .medium))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 46)
-                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surfaceRaised))
+                .frame(height: 50)
+                .background(RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous).fill(Theme.fillStrong))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
     }
 
     private var reveal: some View {
         VStack(spacing: 10) {
-            Text("The answer").caption()
+            Text("THE ANSWER").eyebrow()
             Text("\(NumberText.plain(game.question.answer)) \(game.question.unit)")
-                .bodyText(24, weight: .heavy)
+                .bodyText(26, weight: .bold)
                 .multilineTextAlignment(.center)
             Text("You said \(NumberText.plain(game.guess ?? 0)). That is \(NumberText.factor(game.factor)).")
                 .caption()
@@ -204,7 +212,9 @@ struct BallparkView: View {
             }
             Button(game.roundIndex + 1 >= BallparkGame.rounds ? "See result" : "Next question") {
                 clear()
-                game.next()
+                withAnimation(Motion.settle) {
+                    game.next()
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }

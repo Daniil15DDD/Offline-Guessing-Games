@@ -18,18 +18,24 @@ struct PitchMatchView: View {
             status: "Note \(game.roundIndex + 1) of \(PitchGame.rounds)",
             score: game.score,
             isFinished: game.isFinished,
-            onRestart: { game.restart() }
+            onRestart: {
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
+            }
         ) {
             GameColumn {
-                HStack(spacing: 10) {
-                    Image("hub_pitch")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 44, height: 44)
+                VStack(spacing: 6) {
+                    Image(systemName: "waveform")
+                        .font(.system(size: 44, weight: .medium))
+                        .foregroundStyle(LinearGradient(colors: kind.colors, startPoint: .top, endPoint: .bottom))
                         .accessibilityHidden(true)
-                    Text("Turn your sound on")
+                    Text("Match the note by ear")
+                        .bodyText(22, weight: .bold)
+                    Text("Make sure your sound is on.")
                         .caption()
                 }
+                .padding(.vertical, 6)
 
                 Button {
                     if game.useListen() {
@@ -42,7 +48,7 @@ struct PitchMatchView: View {
                 .disabled(game.revealed || game.listensLeft == 0)
 
                 VStack(spacing: 12) {
-                    Text("Your note").caption()
+                    Text("YOUR NOTE").eyebrow()
                     HStack(spacing: 10) {
                         Image(systemName: "arrow.down").foregroundColor(Theme.textSecondary)
                         Slider(value: $game.slider, in: 0...1)
@@ -62,10 +68,13 @@ struct PitchMatchView: View {
 
                 if game.revealed {
                     reveal
+                        .transition(Motion.rise)
                 } else {
                     Button("Lock in") {
                         TonePlayer.shared.stop()
-                        game.lockIn()
+                        withAnimation(Motion.settle) {
+                            game.lockIn()
+                        }
                         if game.lastPoints >= 70 {
                             Feedback.success()
                         } else {
@@ -100,7 +109,9 @@ struct PitchMatchView: View {
             PointsBadge(points: game.lastPoints)
             Button(game.roundIndex + 1 >= PitchGame.rounds ? "See result" : "Next note") {
                 TonePlayer.shared.stop()
-                game.next()
+                withAnimation(Motion.settle) {
+                    game.next()
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }

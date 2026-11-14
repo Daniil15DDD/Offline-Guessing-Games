@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct GettingWarmerView: View {
     @StateObject private var game: GlobeGame
@@ -6,11 +7,18 @@ struct GettingWarmerView: View {
     @State private var text = ""
     @State private var latitude = 20.0
     @State private var longitude = 10.0
-    /// Where the globe was pointing when the current drag began.
-    @State private var dragStart: (latitude: Double, longitude: Double)?
+    /// Where the globe was pointing, and how far the finger had already
+    /// travelled, when the current drag took hold.
+    @State private var dragStart: (latitude: Double, longitude: Double, origin: CGSize)?
+    /// Degrees the globe still has to turn after a flick. A share of it is
+    /// used up every frame, so the spin dies away like a real ball.
+    @State private var coast: (latitude: Double, longitude: Double) = (0, 0)
     @State private var zoom = 1.0
+    /// The zoom when the current pinch began.
+    @State private var pinchStart: Double?
 
     private let kind = GameKind.globe
+    private let frames = Timer.publish(every: 1.0 / 60.0, on: .main, in: .common).autoconnect()
 
     init(mode: PlayMode = .free) {
         self.mode = mode
@@ -26,7 +34,9 @@ struct GettingWarmerView: View {
             isFinished: game.isFinished,
             onRestart: {
                 text = ""
-                game.restart()
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
             }
         ) {
             GameColumn {
@@ -36,14 +46,19 @@ struct GettingWarmerView: View {
 
                 if game.isOver {
                     reveal
+                        .transition(Motion.rise)
                 } else {
                     entry
                 }
 
                 ForEach(game.ranked) { guess in
                     GuessRow(guess: guess)
+                        .transition(Motion.rise)
                 }
             }
+        }
+        .onReceive(frames) { _ in
+            stepCoast()
         }
     }
 
@@ -62,60 +77,119 @@ struct GettingWarmerView: View {
 
     private var globe: some View {
         GlobeCanvas(latitude: latitude, longitude: longitude, zoom: zoom, fills: fills)
-            .frame(height: 310)
-            .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .frame(height: 320)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                    .strokeBorder(Theme.hairline, lineWidth: 0.5)
+            )
             .contentShape(Rectangle())
             .overlay(alignment: .bottomTrailing) {
-                VStack(spacing: 6) {
+                VStack(spacing: 0) {
                     zoomButton("plus", enabled: zoom < 3.9) {
                         zoom = min(4, zoom * 1.6)
                     }
+                    Rectangle().fill(Theme.hairline).frame(width: 40, height: 0.5)
                     zoomButton("minus", enabled: zoom > 1.01) {
                         zoom = max(1, zoom / 1.6)
                     }
                 }
-                .padding(8)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .padding(10)
             }
             .gesture(
                 DragGesture(minimumDistance: 2)
                     .onChanged { drag in
-                        let start = dragStart ?? (latitude, longitude)
+                        // Two fingers are a pinch, not a turn.
+                        guard pinchStart == nil else {
+                            dragStart = nil
+                            return
+                        }
+                        // Catching the globe mid-spin stops it where it is.
+                        coast = (0, 0)
+                        let start = dragStart ?? (latitude, longitude, drag.translation)
                         dragStart = start
-                        // Zoomed in, the same drag turns the globe less.
+                        // Zoomed in, the same drag turns the globe less, so
+                        // the land stays under the finger.
                         let sensitivity = 0.45 / zoom
-                        longitude = start.longitude - Double(drag.translation.width) * sensitivity
-                        latitude = min(80, max(-80, start.latitude + Double(drag.translation.height) * sensitivity))
+                        longitude = start.longitude - Double(drag.translation.width - start.origin.width) * sensitivity
+                        latitude = min(80, max(-80, start.latitude + Double(drag.translation.height - start.origin.height) * sensitivity))
+                    }
+                    .onEnded { drag in
+                        let wasTurning = dragStart != nil
+                        dragStart = nil
+                        guard wasTurning, pinchStart == nil, !UIAccessibility.isReduceMotionEnabled else { return }
+                        // Carry on in the direction of the flick, by as far
+                        // as the system predicts the finger would have gone.
+                        let sensitivity = 0.45 / zoom
+                        let extraX = Double(drag.predictedEndTranslation.width - drag.translation.width)
+                        let extraY = Double(drag.predictedEndTranslation.height - drag.translation.height)
+                        coast = (
+                            min(60, max(-60, extraY * sensitivity)),
+                            min(240, max(-240, -extraX * sensitivity))
+                        )
+                    }
+            )
+            .simultaneousGesture(
+                MagnificationGesture()
+                    .onChanged { scale in
+                        let start = pinchStart ?? zoom
+                        pinchStart = start
+                        coast = (0, 0)
+                        zoom = min(4, max(1, start * Double(scale)))
                     }
                     .onEnded { _ in
-                        dragStart = nil
+                        pinchStart = nil
                     }
             )
             .accessibilityLabel("Globe. Guessed countries are coloured by how close they are.")
     }
 
+    /// Runs every frame. Uses up a fixed share of the spin that is left, so
+    /// the globe slows smoothly, and what is on screen is always the real
+    /// state: a finger can catch it at any moment without a jump.
+    private func stepCoast() {
+        guard coast.latitude != 0 || coast.longitude != 0 else { return }
+        let share = 1 - exp(-5.0 / 60.0)
+        let stepLatitude = coast.latitude * share
+        let stepLongitude = coast.longitude * share
+        latitude = min(80, max(-80, latitude + stepLatitude))
+        longitude += stepLongitude
+        coast = (coast.latitude - stepLatitude, coast.longitude - stepLongitude)
+        if abs(coast.latitude) < 0.05 && abs(coast.longitude) < 0.05 {
+            coast = (0, 0)
+        }
+    }
+
     private func zoomButton(_ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(Motion.settle) {
                 action()
             }
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: 15, weight: .heavy))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
-                .frame(width: 36, height: 36)
-                .background(Circle().fill(Color.black.opacity(0.5)))
+                .frame(width: 40, height: 40)
+                .contentShape(Rectangle())
         }
+        .buttonStyle(PressableButtonStyle())
         .disabled(!enabled)
-        .opacity(enabled ? 1 : 0.4)
+        .opacity(enabled ? 1 : 0.35)
         .accessibilityLabel(symbol == "plus" ? "Zoom in" : "Zoom out")
     }
 
     /// Spins the globe so a country faces the viewer, the short way round.
     private func face(_ country: Country) {
+        coast = (0, 0)
         var target = country.longitude
         while target - longitude > 180 { target -= 360 }
         while target - longitude < -180 { target += 360 }
-        withAnimation(.easeInOut(duration: 0.7)) {
+        let turn = UIAccessibility.isReduceMotionEnabled
+            ? Animation.easeInOut(duration: 0.2)
+            : Animation.spring(response: 0.7, dampingFraction: 1)
+        withAnimation(turn) {
             longitude = target
             latitude = min(70, max(-70, country.latitude))
         }
@@ -136,26 +210,30 @@ struct GettingWarmerView: View {
                     choose(country)
                 } label: {
                     HStack {
-                        Text(country.name).bodyText()
+                        Text(country.name).bodyText(16, weight: .regular)
                         Spacer()
-                        Image(systemName: "arrow.up.left").foregroundColor(Theme.textSecondary)
+                        Image(systemName: "arrow.up.left")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundColor(Theme.textTertiary)
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
+                    .row()
                 }
+                .buttonStyle(PressableButtonStyle())
             }
 
             HStack {
                 Text(hint).caption()
                 Spacer()
                 Button("Give up") {
-                    game.giveUp()
+                    withAnimation(Motion.settle) {
+                        game.giveUp()
+                    }
                     face(game.target)
                 }
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.system(size: 15))
                 .foregroundColor(Theme.bad)
             }
+            .padding(.horizontal, 4)
         }
     }
 
@@ -168,9 +246,9 @@ struct GettingWarmerView: View {
 
     private var reveal: some View {
         VStack(spacing: 10) {
-            Text(game.solved ? "Found it in \(game.guesses.count)" : "It was").caption()
+            Text(game.solved ? "FOUND IT IN \(game.guesses.count)" : "IT WAS").eyebrow()
             Text(game.target.name)
-                .bodyText(26, weight: .heavy)
+                .bodyText(28, weight: .bold)
                 .multilineTextAlignment(.center)
             PointsBadge(points: game.score)
             Button("See result") {
@@ -182,7 +260,9 @@ struct GettingWarmerView: View {
     }
 
     private func choose(_ country: Country) {
-        game.guess(country)
+        withAnimation(Motion.settle) {
+            game.guess(country)
+        }
         text = ""
         face(country)
         if game.solved {
@@ -246,7 +326,7 @@ private struct GuessRow: View {
                 .fill(guess.isCorrect ? Heat.found : Heat.color(guess.heat))
                 .frame(width: 44, height: 24)
             Text(guess.name)
-                .bodyText(15)
+                .bodyText(16, weight: .regular)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Spacer(minLength: 4)
@@ -254,9 +334,7 @@ private struct GuessRow: View {
                 Image(systemName: "checkmark.circle.fill").foregroundColor(Heat.found)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 11)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
+        .row()
     }
 }
 

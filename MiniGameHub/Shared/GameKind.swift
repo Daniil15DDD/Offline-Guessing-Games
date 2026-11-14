@@ -143,39 +143,39 @@ enum GameKind: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    /// Picture shown on the hub tile (in the asset catalog).
-    var art: String {
+    /// SF Symbol drawn on the game's icon.
+    var symbol: String {
         switch self {
-        case .globe: return "hub_globe"
-        case .fourfold: return "hub_fourfold"
-        case .topTen: return "hub_topten"
-        case .critter: return "hub_critter"
-        case .deep: return "hub_deep"
-        case .price: return "hub_price"
-        case .ballpark: return "hub_ballpark"
-        case .trend: return "hub_trend"
-        case .scale: return "hub_scale"
-        case .hue: return "hub_hue"
-        case .pitch: return "hub_pitch"
-        case .beat: return "hub_beat"
+        case .globe: return "globe.europe.africa.fill"
+        case .fourfold: return "square.grid.2x2.fill"
+        case .topTen: return "list.number"
+        case .critter: return "pawprint.fill"
+        case .deep: return "fish.fill"
+        case .price: return "tag.fill"
+        case .ballpark: return "scope"
+        case .trend: return "chart.line.uptrend.xyaxis"
+        case .scale: return "ruler.fill"
+        case .hue: return "paintpalette.fill"
+        case .pitch: return "tuningfork"
+        case .beat: return "metronome.fill"
         }
     }
 
-    /// Each game has its own two-colour identity.
+    /// Each game has its own pair of colours, taken from the iOS palette.
     var colors: [Color] {
         switch self {
-        case .globe: return [Color(hex: 0x4F7CFF), Color(hex: 0x2CC4E8)]
-        case .fourfold: return [Color(hex: 0x8B5CF6), Color(hex: 0xEC4899)]
-        case .topTen: return [Color(hex: 0xF5A524), Color(hex: 0xF9622A)]
-        case .critter: return [Color(hex: 0xFF8A3D), Color(hex: 0xFF4F81)]
-        case .deep: return [Color(hex: 0x1BB3C8), Color(hex: 0x2A4BD7)]
-        case .price: return [Color(hex: 0x2FC98D), Color(hex: 0x0E9AA0)]
-        case .ballpark: return [Color(hex: 0xF43F5E), Color(hex: 0xFB8B3C)]
-        case .trend: return [Color(hex: 0x6366F1), Color(hex: 0x38A9F0)]
-        case .scale: return [Color(hex: 0x74B816), Color(hex: 0x169C4B)]
-        case .hue: return [Color(hex: 0xE85FAE), Color(hex: 0xF2A93B)]
-        case .pitch: return [Color(hex: 0xA855F7), Color(hex: 0x3B82F6)]
-        case .beat: return [Color(hex: 0xF76584), Color(hex: 0x8E3BE0)]
+        case .globe: return [Color(hex: 0x32ADE6), Color(hex: 0x0A84FF)]
+        case .fourfold: return [Color(hex: 0xBF5AF2), Color(hex: 0x5E5CE6)]
+        case .topTen: return [Color(hex: 0xFFB340), Color(hex: 0xFF7A00)]
+        case .critter: return [Color(hex: 0xFF6482), Color(hex: 0xFF375F)]
+        case .deep: return [Color(hex: 0x40C8E0), Color(hex: 0x0A6CFF)]
+        case .price: return [Color(hex: 0x30D158), Color(hex: 0x1FA046)]
+        case .ballpark: return [Color(hex: 0xFF6961), Color(hex: 0xFF3B30)]
+        case .trend: return [Color(hex: 0x7D7AFF), Color(hex: 0x3F3CD6)]
+        case .scale: return [Color(hex: 0x00C7BE), Color(hex: 0x00998F)]
+        case .hue: return [Color(hex: 0xFF7EB6), Color(hex: 0xC644FC)]
+        case .pitch: return [Color(hex: 0xDA8FFF), Color(hex: 0xAF52DE)]
+        case .beat: return [Color(hex: 0xFF9F0A), Color(hex: 0xFF453A)]
         }
     }
 

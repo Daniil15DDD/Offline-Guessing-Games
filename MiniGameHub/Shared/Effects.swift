@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// A burst of falling paper shown over a good result. It draws itself for a
 /// few seconds and then goes away.
@@ -70,10 +71,12 @@ struct ShakeEffect: GeometryEffect {
     }
 }
 
-/// One to three stars for a result.
+/// One to three stars for a result. Earned stars pop in one after another.
 struct StarRating: View {
     /// Score divided by the best possible score.
     let fraction: Double
+
+    @State private var shown = false
 
     static func stars(for fraction: Double) -> Int {
         if fraction >= 0.9 { return 3 }
@@ -84,12 +87,24 @@ struct StarRating: View {
 
     var body: some View {
         let earned = Self.stars(for: fraction)
-        HStack(spacing: 6) {
+        HStack(spacing: 10) {
             ForEach(0..<3, id: \.self) { index in
-                Image(systemName: index < earned ? "star.fill" : "star")
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundColor(index < earned ? Color(hex: 0xF5C542) : Theme.surfaceRaised)
+                ZStack {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(Color.white.opacity(0.12))
+                    if index < earned {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(Theme.star)
+                            .scaleEffect(shown || UIAccessibility.isReduceMotionEnabled ? 1 : 0.2)
+                            .opacity(shown ? 1 : 0)
+                            .animation(Motion.bounce.delay(0.3 + 0.14 * Double(index)), value: shown)
+                    }
+                }
+                .font(.system(size: 34, weight: .semibold))
             }
+        }
+        .onAppear {
+            shown = true
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(earned) of 3 stars")
@@ -103,47 +118,49 @@ struct RulesSheet: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 20) {
                 HStack(spacing: 14) {
-                    Image(kind.art)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 64, height: 64)
+                    GameIcon(kind: kind, size: 60)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("How to play").caption()
+                        Text("HOW TO PLAY").eyebrow()
                         Text(kind.title)
-                            .font(.system(size: 26, weight: .heavy, design: .rounded))
+                            .font(.title2.bold())
                             .foregroundColor(.white)
                     }
                     Spacer()
                 }
 
-                ForEach(Array(kind.rules.enumerated()), id: \.offset) { index, rule in
-                    HStack(alignment: .top, spacing: 12) {
-                        Text("\(index + 1)")
-                            .font(.system(size: 14, weight: .heavy, design: .rounded))
-                            .foregroundColor(.white)
-                            .frame(width: 26, height: 26)
-                            .background(Circle().fill(kind.gradient))
-                        Text(rule)
-                            .font(.system(size: 16, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.92))
-                            .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 16) {
+                    ForEach(Array(kind.rules.enumerated()), id: \.offset) { index, rule in
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
+                            Text("\(index + 1)")
+                                .font(.subheadline.weight(.bold))
+                                .monospacedDigit()
+                                .foregroundColor(kind.accent)
+                                .frame(width: 18, alignment: .leading)
+                            Text(rule)
+                                .font(.body)
+                                .foregroundColor(.white.opacity(0.92))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
 
                 Text("A full run is worth up to \(kind.maxScore) points.")
-                    .caption()
+                    .font(.footnote)
+                    .foregroundColor(Theme.textSecondary)
 
                 Button("Got it") {
                     dismiss()
                 }
                 .buttonStyle(PrimaryButtonStyle(kind: kind))
-                .padding(.top, 4)
             }
-            .padding(22)
+            .padding(.horizontal, 22)
+            .padding(.top, 28)
+            .padding(.bottom, 22)
         }
         .background(Theme.surface.ignoresSafeArea())
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }

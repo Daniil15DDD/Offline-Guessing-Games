@@ -21,7 +21,9 @@ struct PricePointView: View {
             isFinished: game.isFinished,
             onRestart: {
                 text = ""
-                game.restart()
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
             }
         ) {
             GameColumn {
@@ -29,6 +31,7 @@ struct PricePointView: View {
 
                 if game.roundOver {
                     reveal
+                        .transition(Motion.rise)
                 } else {
                     HStack(spacing: 8) {
                         AnswerField(placeholder: "Price in dollars", text: $text, numeric: true, onSubmit: submit)
@@ -43,7 +46,7 @@ struct PricePointView: View {
                 ForEach(game.guesses.reversed()) { guess in
                     HStack {
                         Text(Self.money(guess.amount))
-                            .font(.system(size: 17, weight: .heavy, design: .rounded))
+                            .font(.system(size: 17, weight: .semibold))
                             .monospacedDigit()
                             .foregroundColor(.white)
                         Spacer()
@@ -51,12 +54,11 @@ struct PricePointView: View {
                             Text("Close").caption()
                         }
                         Label(Self.label(guess.hint), systemImage: Self.symbol(guess.hint))
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(guess.hint == .correct ? Theme.good : (guess.isClose ? Theme.near : Theme.bad))
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 11)
-                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.surface))
+                    .row()
+                    .transition(Motion.rise)
                 }
             }
         }
@@ -64,13 +66,16 @@ struct PricePointView: View {
 
     private var reveal: some View {
         VStack(spacing: 10) {
-            Text(game.solved ? "Close enough" : "The price was").caption()
+            Text(game.solved ? "CLOSE ENOUGH" : "THE PRICE WAS").eyebrow()
             Text(Self.money(game.item.price))
-                .bodyText(30, weight: .heavy)
+                .bodyText(34, weight: .bold)
+                .monospacedDigit()
             PointsBadge(points: game.lastPoints)
             Button(game.roundIndex + 1 >= PriceGame.rounds ? "See result" : "Next item") {
                 text = ""
-                game.next()
+                withAnimation(Motion.settle) {
+                    game.next()
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }
@@ -79,7 +84,9 @@ struct PricePointView: View {
 
     private func submit() {
         guard let amount = NumberText.parse(text) else { return }
-        game.guess(amount)
+        withAnimation(Motion.settle) {
+            game.guess(amount)
+        }
         text = ""
         if game.solved {
             Feedback.success()
@@ -140,25 +147,28 @@ private struct ProductCard: View {
 
             VStack(spacing: 5) {
                 Text(item.name)
-                    .bodyText(22, weight: .heavy)
+                    .bodyText(22, weight: .bold)
                     .multilineTextAlignment(.center)
                 Text(item.detail)
                     .caption()
                     .multilineTextAlignment(.center)
                 Text("Typical US shop price. Get within 5% to win.")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(Theme.textSecondary.opacity(0.8))
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.textTertiary)
                     .multilineTextAlignment(.center)
             }
-            .padding(14)
+            .padding(16)
             .frame(maxWidth: .infinity)
-            .background(Theme.surface)
+            .background(.ultraThinMaterial)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+            RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                .strokeBorder(Theme.hairline, lineWidth: 0.5)
         )
+        // A new item swaps in place of the old one.
+        .id(item.name)
+        .transition(.opacity)
         .accessibilityElement(children: .combine)
     }
 }

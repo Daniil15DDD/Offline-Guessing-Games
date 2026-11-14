@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct BeatKeeperView: View {
     @StateObject private var game: BeatGame
@@ -24,21 +25,24 @@ struct BeatKeeperView: View {
             isFinished: game.isFinished,
             onRestart: {
                 runToken = UUID()
-                game.restart()
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
             }
         ) {
             GameColumn {
                 Text(headline)
-                    .bodyText(20, weight: .heavy)
+                    .bodyText(22, weight: .bold)
                     .multilineTextAlignment(.center)
+                    .padding(.top, 6)
 
                 pad
 
                 HStack(spacing: 8) {
                     ForEach(0..<BeatGame.tapsNeeded, id: \.self) { index in
                         Circle()
-                            .fill(index < progress ? kind.accent : Theme.surfaceRaised)
-                            .frame(width: 12, height: 12)
+                            .fill(index < progress ? Color.white : Theme.fillStrong)
+                            .frame(width: 10, height: 10)
                     }
                 }
                 .accessibilityHidden(true)
@@ -46,7 +50,9 @@ struct BeatKeeperView: View {
                 switch game.phase {
                 case .ready:
                     Button("Play the beat") {
-                        playDemo()
+                        withAnimation(Motion.settle) {
+                            playDemo()
+                        }
                     }
                     .buttonStyle(PrimaryButtonStyle(kind: kind))
                     Text("You will hear and see \(BeatGame.demoBeats) beats. Then tap \(BeatGame.tapsNeeded) times at the same speed.")
@@ -58,6 +64,7 @@ struct BeatKeeperView: View {
                     Text("Tap the pad \(BeatGame.tapsNeeded - game.taps.count) more times").caption()
                 case .revealed:
                     reveal
+                        .transition(Motion.rise)
                 }
             }
         }
@@ -81,18 +88,34 @@ struct BeatKeeperView: View {
     }
 
     private var pad: some View {
-        Circle()
-            .fill(game.phase == .tapping ? kind.gradient : LinearGradient(colors: [Theme.surfaceRaised, Theme.surface], startPoint: .top, endPoint: .bottom))
-            .frame(width: 210, height: 210)
-            .scaleEffect(pulse || isPressed ? 1.08 : 1)
-            .overlay(
-                Image("hub_beat")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 118, height: 118)
-                    .opacity(game.phase == .tapping ? 1 : 0.85)
-            )
-            .padding(.vertical, 10)
+        ZStack {
+            // A ring that jumps outward on every beat that is played.
+            Circle()
+                .stroke(kind.accent.opacity(pulse ? 0.55 : 0), lineWidth: 3)
+                .frame(width: 216, height: 216)
+                .scaleEffect(pulse ? 1.1 : 1)
+                .animation(pulse ? Motion.press : .easeOut(duration: 0.35), value: pulse)
+
+            Circle()
+                .fill(game.phase == .tapping
+                      ? LinearGradient(colors: kind.colors, startPoint: .top, endPoint: .bottom)
+                      : LinearGradient(colors: [Theme.fillStrong, Theme.fill], startPoint: .top, endPoint: .bottom))
+                .overlay(Circle().strokeBorder(Color.white.opacity(0.14), lineWidth: 0.5))
+                .frame(width: 216, height: 216)
+                // The pad sinks under the finger the instant it lands, and
+                // swells a touch on each demo beat.
+                .scaleEffect(isPressed ? 0.94 : (pulse ? 1.03 : 1))
+                .animation(isPressed || pulse ? Motion.press : Motion.quick, value: isPressed)
+                .animation(pulse ? Motion.press : Motion.quick, value: pulse)
+                .overlay(
+                    Image(systemName: game.phase == .tapping ? "hand.tap.fill" : "metronome.fill")
+                        .font(.system(size: 64, weight: .medium))
+                        .foregroundColor(.white.opacity(game.phase == .tapping ? 1 : 0.7))
+                        .scaleEffect(isPressed ? 0.94 : 1)
+                        .animation(isPressed ? Motion.press : Motion.quick, value: isPressed)
+                )
+        }
+            .padding(.vertical, 14)
             .contentShape(Circle())
             .gesture(
                 // Fires on touch down, which is when a tap is felt.
@@ -117,7 +140,9 @@ struct BeatKeeperView: View {
                 .multilineTextAlignment(.center)
             PointsBadge(points: game.lastPoints)
             Button(game.roundIndex + 1 >= BeatGame.rounds ? "See result" : "Next beat") {
-                game.next()
+                withAnimation(Motion.settle) {
+                    game.next()
+                }
             }
             .buttonStyle(PrimaryButtonStyle(kind: kind))
         }

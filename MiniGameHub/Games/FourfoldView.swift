@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct FourfoldView: View {
     @StateObject private var game: FourfoldGame
@@ -9,7 +10,7 @@ struct FourfoldView: View {
     private let kind = GameKind.fourfold
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 4)
     /// One colour per group, easiest first.
-    private let groupColors = [Color(hex: 0x2BA6A0), Color(hex: 0xE2892F), Color(hex: 0xD9507C), Color(hex: 0x6C63E0)]
+    private let groupColors = [Color(hex: 0x30B0C7), Color(hex: 0xFF9F0A), Color(hex: 0xFF375F), Color(hex: 0x5E5CE6)]
 
     init(mode: PlayMode = .free) {
         self.mode = mode
@@ -23,7 +24,11 @@ struct FourfoldView: View {
             status: "\(game.solvedGroups.count) of 4 groups",
             score: game.score,
             isFinished: game.isFinished,
-            onRestart: { game.restart() }
+            onRestart: {
+                withAnimation(Motion.settle) {
+                    game.restart()
+                }
+            }
         ) {
             GameColumn {
                 Text("Find four groups of four words that belong together.")
@@ -34,17 +39,16 @@ struct FourfoldView: View {
                     let group = game.puzzle.groups[index]
                     VStack(spacing: 3) {
                         Text(group.title.uppercased())
-                            .font(.system(size: 14, weight: .heavy, design: .rounded))
+                            .font(.system(size: 14, weight: .bold))
                         Text(group.words.joined(separator: ", "))
-                            .font(.system(size: 13, weight: .medium, design: .rounded))
+                            .font(.system(size: 13, weight: .regular))
                             .multilineTextAlignment(.center)
                     }
                     .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity, minHeight: 64)
                     .padding(.horizontal, 8)
-                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(groupColors[index % 4]))
-                    .transition(.scale(scale: 0.85).combined(with: .opacity))
+                    .background(RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous).fill(groupColors[index % 4]))
+                    .transition(Motion.pop)
                 }
 
                 LazyVGrid(columns: columns, spacing: 8) {
@@ -55,28 +59,28 @@ struct FourfoldView: View {
                             Feedback.tap()
                         } label: {
                             Text(word)
-                                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                                .font(.system(size: 13, weight: .semibold))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.5)
-                                .foregroundColor(.white)
+                                .foregroundColor(isSelected ? .black : .white)
                                 .padding(.horizontal, 4)
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 62)
+                                .frame(height: 64)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(isSelected ? kind.accent : Theme.surfaceRaised)
+                                    RoundedRectangle(cornerRadius: Theme.controlRadius, style: .continuous)
+                                        .fill(isSelected ? Color.white : Theme.fillStrong)
                                 )
                         }
-                        .buttonStyle(.plain)
-                        .scaleEffect(isSelected ? 0.96 : 1)
+                        .buttonStyle(PressableButtonStyle())
                         .modifier(ShakeEffect(animatableData: isSelected ? shakes : 0))
-                        .animation(.easeOut(duration: 0.12), value: isSelected)
+                        .animation(Motion.quick, value: isSelected)
                         .accessibilityLabel(isSelected ? "\(word), selected" : word)
                     }
                 }
 
                 if game.isOver {
                     guessGrid
+                        .transition(Motion.rise)
                     Button("See result") {
                         game.finish()
                     }
@@ -91,12 +95,12 @@ struct FourfoldView: View {
     /// Every guess as four coloured squares, like a record of the game.
     private var guessGrid: some View {
         VStack(spacing: 8) {
-            Text("Your guesses").caption()
+            Text("YOUR GUESSES").eyebrow()
             VStack(spacing: 5) {
                 ForEach(Array(game.history.enumerated()), id: \.offset) { _, guess in
                     HStack(spacing: 5) {
                         ForEach(Array(guess.enumerated()), id: \.offset) { _, group in
-                            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
                                 .fill(groupColors[group % 4])
                                 .frame(width: 26, height: 26)
                         }
@@ -115,8 +119,9 @@ struct FourfoldView: View {
                 Text("Mistakes left").caption()
                 ForEach(0..<FourfoldGame.maxMistakes, id: \.self) { index in
                     Circle()
-                        .fill(index < game.mistakesLeft ? kind.accent : Theme.surfaceRaised)
-                        .frame(width: 12, height: 12)
+                        .fill(index < game.mistakesLeft ? Color.white : Theme.fillStrong)
+                        .frame(width: 10, height: 10)
+                        .animation(Motion.quick, value: game.mistakesLeft)
                 }
             }
             .accessibilityElement(children: .ignore)
@@ -127,7 +132,9 @@ struct FourfoldView: View {
 
             HStack(spacing: 10) {
                 Button("Shuffle") {
-                    game.shuffleBoard()
+                    withAnimation(Motion.settle) {
+                        game.shuffleBoard()
+                    }
                 }
                 .buttonStyle(SecondaryButtonStyle())
 
@@ -140,15 +147,17 @@ struct FourfoldView: View {
                 Button("Submit") {
                     let before = game.solvedGroups.count
                     let mistakesBefore = game.mistakes
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
+                    withAnimation(Motion.settle) {
                         game.submit()
                     }
                     if game.solvedGroups.count > before && game.mistakes == mistakesBefore {
                         Feedback.success()
                     } else if game.mistakes > mistakesBefore {
                         Feedback.failure()
-                        withAnimation(.linear(duration: 0.45)) {
-                            shakes += 1
+                        if !UIAccessibility.isReduceMotionEnabled {
+                            withAnimation(.linear(duration: 0.4)) {
+                                shakes += 1
+                            }
                         }
                     }
                 }
